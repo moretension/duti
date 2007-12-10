@@ -1,0 +1,75 @@
+SHELL = /bin/sh
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+MANDIR=@mandir@
+
+DH_BUILD_DATE=@build_date@
+
+CC=		@CC@
+FRAMEWORKS=	-framework ApplicationServices -framework CoreFoundation
+OPTOPTS=	-isysroot @macosx_sdk@ \
+			-arch i386 -arch ppc \
+			@OPTOPTS@
+
+LIBS=		@LIBS@
+LDFLAGS=	@LDFLAGS@ ${LIBS}
+CFLAGS=		${OPTOPTS} @CFLAGS@
+INSTALL=	@INSTALL@
+
+TARGETS=	dh
+MAN1TARGETS=	dh.1
+MANTARGETS=	${MAN1TARGETS}
+
+DH_OBJ=		version.o dh.o
+
+all : ${TARGETS}
+
+version.o : version.c
+	${CC} ${CFLAGS} -c ${srcdir}/version.c
+
+dh.o : dh.c
+	${CC} ${CFLAGS} -c ${srcdir}/dh.c
+
+dh : ${DH_OBJ}
+	${CC} ${FRAMEWORKS} ${CFLAGS} -o dh ${DH_OBJ} ${LDFLAGS}
+
+VERSION=$(shell date +%Y%m%d)
+DISTDIR=../dh-${VERSION}
+
+dist : distclean
+	mkdir ${DISTDIR}
+	tar -h -c -f - -X EXCLUDE . | tar xpf - -C ${DISTDIR}
+	echo ${VERSION} > ${DISTDIR}/VERSION
+	sed -e "s@INTERNAL@${VERSION}@" \
+		< configure.ac > ${DISTDIR}/configure.ac
+	(cd "${DISTDIR}"; autoconf; rm -rf autom4te.cache)
+	for i in ${MANTARGETS}; do \
+	    sed -e 's@_DH_BUILD_DATE@${DH_BUILD_DATE}@g' \
+		    ${DISTDIR}/$$i > ${DISTDIR}/$$i.tmp; \
+	    mv -f ${DISTDIR}/$$i.tmp ${DISTDIR}/$$i; \
+	done
+	tar cvfz ${DISTDIR}.tar.gz ${DISTDIR}
+	for c in sha1 rmd160 md5; do \
+	    openssl $$c ${DISTDIR}.tar.gz; \
+	done
+
+install : all
+	-mkdir -p ${DESTDIR}${BINDIR}
+	${INSTALL} -m 0755 -c ${TARGETS} ${DESTDIR}${BINDIR}/
+	-mkdir -p ${DESTDIR}${MANDIR}/man1
+	${INSTALL} -m 0644 -c ${MAN1TARGETS} ${DESTDIR}${MANDIR}/man1/
+
+clean :
+	rm -f *.o a.out core
+	rm -f ${TARGETS}
+	rm -rf tmp
+
+distclean : clean
+	rm -f config.log config.status config.cache Makefile version.c
+	rm -rf autom4te.cache
+	rm -rf .#*

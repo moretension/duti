@@ -1,0 +1,98 @@
+.TH dh "1" "_DH_BUILD_DATE" "University of Michigan" "User Commands"
+.SH NAME
+.B dh
+\- set default UTI handlers
+.SH SYNOPSIS
+.B dh
+[
+.BI \-hVv
+] [
+.I settings_file
+]
+.sp
+.SH DESCRIPTION
+.B dh
+sets applications as default handlers for Apple's Uniform Type Identifiers.
+If
+.I settings_file
+is not given on the command line, dh reads settings lines from stdin.
+.sp
+.SH SETTINGS FILES
+The
+.I settings_file
+is made up of lines with the following format:
+.sp
+.br
+	app_id    UTI    role
+.br
+.sp
+The
+.I app_id
+is a bundle ID representing the application that will act as the
+handler for documents associated with
+.I UTI.
+For example:
+.sp
+.br
+	com.apple.Safari	public.html	all
+.br
+.sp
+would cause
+.B dh
+to set Safari as the default handler in all situations for HTML documents.
+.sp
+Valid roles are defined as follows:
+.sp
+.TP 19
+.B all
+application handles all roles for the given UTI.
+.TP 19
+.B viewer
+application handles reading and displaying documents with the given UTI.
+.TP 19
+.B editor
+application can manipulate and save the item. Implies viewer.
+.TP 19
+.B shell
+application can execute the item.
+.TP 19
+.B none
+application cannot open the item, but provides an icon for the given UTI.
+.SH EXAMPLES
+The following sets TextEdit as the default viewer for Microsoft Word documents.
+.sp
+.br
+	com.apple.TextEdit    com.microsoft.word.doc    viewer
+.br
+.sp
+The following sets iHook as the default executor of shell scripts.
+.sp
+.br
+	edu.umich.iHook    public.shell-script    shell
+.br
+.sp
+The following sets Xcode as the default editor for C source files.
+.sp
+.br
+	com.apple.Xcode    public.c-source    editor
+.br
+.sp
+.SH OPTIONS
+.TP 19
+.B \-h
+print usage and exit.
+.TP 19
+.B \-V
+print version number and exit.
+.TP 19
+.B \-v
+verbose output.
+.sp
+.SH FURTHER READING
+Mac OS X ships with a number of UTIs already defined. Most third-party
+software is responsible for defining its own UTIs. Apple documents UTIs
+in the Apple Developer Connection Library at:
+.sp
+.br
+	http://developer.apple.com/referencelibrary/
+.br

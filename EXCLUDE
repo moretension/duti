@@ -1,0 +1,6 @@
+.cvsignore
+CVS
+EXCLUDE
+Makefile
+config.log
+config.status
