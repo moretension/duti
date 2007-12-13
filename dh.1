@@ -7,17 +7,21 @@
 [
 .BI \-hVv
 ] [
+.BI \-p\  settings.plist
+] [
 .I settings_file
 ]
 .sp
 .SH DESCRIPTION
 .B dh
 sets applications as default handlers for Apple's Uniform Type Identifiers.
-If
+If neither
 .I settings_file
-is not given on the command line, dh reads settings lines from stdin.
+nor
+.I settings.plist
+is given on the command line, dh reads settings lines from stdin.
 .sp
-.SH SETTINGS FILES
+.SH SETTINGS FILE
 The
 .I settings_file
 is made up of lines with the following format:
@@ -30,7 +34,7 @@ The
 .I app_id
 is a bundle ID representing the application that will act as the
 handler for documents associated with
-.I UTI.
+.IR UTI .
 For example:
 .sp
 .br
@@ -41,6 +45,53 @@ would cause
 .B dh
 to set Safari as the default handler in all situations for HTML documents.
 .sp
+.SH SETTINGS PLIST
+Using
+.BI \-p\  settings.plist
+causes
+.B dh
+to read default handler settings from an XML propertly list file (plist).
+The plist must contain a key-value pair, in which the key is "DHSettings"
+and the value is an array of dictionaries. Each dictionary in the array
+contains three key-value pairs representing the application's bundle ID,
+the UTI and the role, respectively. A simple plist designed to set Safari
+as the default handler of HTML files would look like this:
+.sp
+.br
+	<?xml version="1.0" encoding="UTF-8"?>
+.br
+	<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+.br
+	<plist version="1.0">
+.br
+	<dict>
+.br
+		<key>DHSettings</key>
+.br
+		<array>
+.br
+			<dict>
+.br
+				<key>DHBundleIdentifier</key>
+.br
+				<string>com.apple.Safari</string>
+.br
+				<key>DHUniformTypeIdentifier</key>
+.br
+				<string>public.html</string>
+.br
+				<key>DHRole</key>
+.br
+				<string>all</string>
+.br
+			</dict>
+.br
+		</array>
+.br
+	</dict>
+.br
+.sp
+.SH ROLES
 Valid roles are defined as follows:
 .sp
 .TP 19
@@ -82,11 +133,27 @@ The following sets Xcode as the default editor for C source files.
 .B \-h
 print usage and exit.
 .TP 19
+.BI \-p\  settings.plist
+read settings from the XML property list
+.I settings.plist
+instead of a plain-text settings file.
+.TP 19
 .B \-V
 print version number and exit.
 .TP 19
 .B \-v
 verbose output.
+.sp
+.SH EXIT STATUS
+.TP 5
+0
+All settings applied successfully.
+.TP 5
+1
+Some settings could not be applied.
+.TP 5
+>1
+Error.
 .sp
 .SH MORE INFO
 Mac OS X ships with a number of UTIs already defined. Most third-party
@@ -103,5 +170,6 @@ To get a list of UTIs on your system, you can use the following command line:
 	`locate lsregister` -dump | grep '[[:space:]]uti:' \\
 .br
 		| awk '{ print $2 }' | sort | uniq
-.br
 .sp
+.SH SEE ALSO
+plutil(1), plist(5)
