@@ -88,7 +88,7 @@ print version number and exit.
 .B \-v
 verbose output.
 .sp
-.SH FURTHER READING
+.SH MORE INFO
 Mac OS X ships with a number of UTIs already defined. Most third-party
 software is responsible for defining its own UTIs. Apple documents UTIs
 in the Apple Developer Connection Library at:
@@ -96,3 +96,12 @@ in the Apple Developer Connection Library at:
 .br
 	http://developer.apple.com/referencelibrary/
 .br
+.sp
+To get a list of UTIs on your system, you can use the following command line:
+.sp
+.br
+	`locate lsregister` -dump | grep '[[:space:]]uti:' \\
+.br
+		| awk '{ print $2 }' | sort | uniq
+.br
+.sp
