@@ -13,8 +13,12 @@
 #include <unistd.h>
 
 #include "dh.h"
+#include "plist.h"
 
 extern char		*dh_version;
+int			verbose = 0;
+int			nroles;
+
 
 /*
  * parseline is a simplified argcargv. nothing clever here.
@@ -55,97 +59,41 @@ parseline( char *line, char ***lineav )
 }
 
     int
-sethandler( char *handler, char *doctype, LSRolesMask mask )
+sethandler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 {
-    CFStringRef		bid = NULL;
-    CFStringRef		type = NULL;
     OSStatus		rc;
 
-    /* must have a CF representation of the role handler and doctype */
-    if (( bid = CFStringCreateWithBytes( kCFAllocatorDefault,
-		( UInt8 * )handler, ( CFIndex )strlen( handler ),
-		kCFStringEncodingUTF8, false )) == NULL ) {
-	fprintf( stderr, "CFStringCreateWithBytes %s failed\n", handler );
-	rc = -1;
-	goto cleanup;
-    }
-    if (( type = CFStringCreateWithBytes( kCFAllocatorDefault,
-		( UInt8 * )doctype, ( CFIndex )strlen( doctype ),
-		kCFStringEncodingUTF8, false )) == NULL ) {
-	fprintf( stderr, "CFStringCreateWithBytes %s failed\n", doctype );
-	rc = -1;
-	goto cleanup;
+    if ( verbose ) {
+	fputs( "setting ", stderr );
+	CFShow( bid );
+	fputs( "\tas handler for ", stderr );
+	CFShow( type );
     }
 
     rc = LSSetDefaultRoleHandlerForContentType( type, mask, bid );
     if ( rc != noErr ) {
-	fprintf( stderr, "Failed to set \"%s\" as default handler "
-			 "for \"%s\" (error %d)\n",
-			 handler, doctype, ( int )rc );
+	fprintf( stderr, "Failed to set \"" );
+	CFShow( bid );
+	fprintf( stderr, "\" as default handler for \"" );
+	CFShow( type );
+	fprintf( stderr, "\" (error %d)\n", ( int )rc );
     }
 
-cleanup:
-    if ( bid != NULL ) {
-	CFRelease( bid );
-    }
-    if ( type != NULL ) {
-	CFRelease( type );
-    }
 
     return(( int )rc );
 }
 
     int
-main( int ac, char *av[] )
+fsethandler( FILE *f )
 {
-    FILE	*f = NULL;
     char	line[ MAXPATHLEN * 2 ];
     char	*handler, *doctype, *role;
     char	**lineav = NULL;
-    int		len, i, c;
-    int		linenum = 0;
-    int		err = 0;
-    int		verbose = 0;
-    int		nroles = sizeof( rtm ) / sizeof( rtm[ 0 ] );
+    int		i, len, linenum = 0, rc = 0;
 
-    extern int	optind;
+    CFStringRef	bid = NULL, type = NULL;
 
-    while (( c = getopt( ac, av, "hVv" )) != -1 ) {
-	switch ( c ) {
-	case 'h':	/* help */
-	default:
-	    err++;
-	    break;
-
-	case 'V':	/* version */
-	    printf( "%s\n", dh_version );
-	    exit( 0 );
-
-	case 'v':	/* verbose */
-	    verbose = 1;
-	    break;
-	}
-    }
-
-    if ( ac - optind == 0 ) {
-	f = stdin;
-    } else if ( ac - optind == 1 ) {
-	if (( f = fopen( av[ optind ], "r" )) == NULL ) {
-	    perror( av[ optind ] );
-	    exit( 2 );
-	}
-    } else {
-	err++;
-    }
-
-    if ( err ) {
-	fprintf( stderr, "usage: %s [ -v ] [ settings_file ]\n", av[ 0 ] );
-	exit( 1 );
-    }
-
-    err = 0;
-
-    while ( fgets( line, MAXPATHLEN * 2, f ) != NULL ) {
+    while ( fgets( line, sizeof( line ), f ) != NULL ) {
 	linenum++;
 
 	len = strlen( line );
@@ -162,7 +110,7 @@ main( int ac, char *av[] )
 	
 	if ( parseline( line, &lineav ) != 0 ) {
 	    fprintf( stderr, "line %d: parsing failed\n", linenum );
-	    err = 1;
+	    rc = 1;
 	    continue;
 	}
 
@@ -178,26 +126,181 @@ main( int ac, char *av[] )
 	if ( i >= nroles ) {
 	    fprintf( stderr, "line %d: role \"%s\" unrecognized\n",
 			linenum, role );
-	    err = 1;
+	    rc = 1;
 	    continue;
 	}
 
-	if ( verbose ) {
-	    printf( "Setting %s as default handler for %s with role %s\n",
-			handler, doctype, role );
+	/* must have a CF representation of the role handler and doctype */
+	if (( bid = CFStringCreateWithBytes( kCFAllocatorDefault,
+		    ( UInt8 * )handler, ( CFIndex )strlen( handler ),
+		    kCFStringEncodingUTF8, false )) == NULL ) {
+	    fprintf( stderr, "CFStringCreateWithBytes %s failed\n", handler );
+	    rc = 1;
+	    goto cleanup;
 	}
-	if ( sethandler( handler, doctype, rtm[ i ].r_mask ) != 0 ) {
-	    err = 1;
+	if (( type = CFStringCreateWithBytes( kCFAllocatorDefault,
+		    ( UInt8 * )doctype, ( CFIndex )strlen( doctype ),
+		    kCFStringEncodingUTF8, false )) == NULL ) {
+	    fprintf( stderr, "CFStringCreateWithBytes %s failed\n", doctype );
+	    rc = 1;
+	    goto cleanup;
 	}
-    }
-    if ( ferror( f )) {
-	perror( "fgets" );
-	exit( 2 );
+	if ( sethandler( bid, type, rtm[ i ].r_mask ) != 0 ) {
+	    rc = 1;
+	}
+
+cleanup:
+	if ( bid != NULL ) {
+	    CFRelease( bid );
+	}
+	if ( type != NULL ) {
+	    CFRelease( type );
+	}
     }
 
-    if ( fclose( f ) != 0 ) {
-	perror( "fclose" );
-	exit( 2 );
+    return( rc );
+}
+
+    int
+psethandler( CFDictionaryRef plist )
+{
+    CFArrayRef		dharray;
+    CFDictionaryRef	dhentry;
+    CFStringRef		bid, uti, role;
+    CFIndex		count, index;
+
+    int			i, rc = 0;
+    char		crole[ 255 ];
+
+    if ( !plist ) {
+	fprintf( stderr, "%s: Invalid plist\n", __FUNCTION__ );
+	return( 1 );
+    }
+
+    if (( dharray = CFDictionaryGetValue( plist, DH_KEY_SETTINGS )) == NULL ) {
+	fprintf( stderr, "plist is missing the settings array\n" );
+	return( 1 );
+    }
+
+    count = CFArrayGetCount( dharray );
+    for ( index = 0; index < count; index++ ) {
+	dhentry = CFArrayGetValueAtIndex( dharray, index );
+
+	if (( bid = CFDictionaryGetValue( dhentry,
+			DH_KEY_BUNDLEID )) == NULL ) {
+	    fprintf( stderr, "Entry %d missing bundle ID\n", ( int )index );
+	    rc = 1;
+	    continue;
+	}
+	if (( uti = CFDictionaryGetValue( dhentry, DH_KEY_UTI )) == NULL ) {
+	    fprintf( stderr, "Entry %d missing UTI\n", ( int )index );
+	    rc = 1;
+	    continue;
+	}
+	if (( role = CFDictionaryGetValue( dhentry, DH_KEY_ROLE )) == NULL ) {
+	    fprintf( stderr, "Entry %d missing role\n", ( int )index );
+	    rc = 1;
+	    continue;
+	}
+
+	/* get C string form of role to look up LSRoleMask */
+	if ( !CFStringGetCString( role, crole,
+		( CFIndex )sizeof( crole ), kCFStringEncodingUTF8 )) {
+	    fprintf( stderr, "Failed to create C string from role " );
+	    CFShow( role );
+	    rc = 1;
+	    continue;
+	}
+	for ( i = 0; i < nroles; i++ ) {
+            if ( strcasecmp( crole, rtm[ i ].r_role ) == 0 ) {
+                break;
+            }
+        }
+        if ( i >= nroles ) {
+            fprintf( stderr, "entry %d: role \"%s\" unrecognized\n",
+                        ( int )index, crole );
+            rc = 1;
+            continue;
+        }	
+
+	if ( sethandler( bid, uti, rtm[ i ].r_mask ) != 0 ) {
+	    rc = 1;
+	}
+    }
+
+    return( rc );
+}
+
+    int
+main( int ac, char *av[] )
+{
+    FILE		*f = NULL;
+    char		*pl = NULL;
+    int			c, err = 0;
+    extern int		optind;
+
+    CFDictionaryRef	dhdict = NULL;
+
+    while (( c = getopt( ac, av, "hVvp:" )) != -1 ) {
+	switch ( c ) {
+	case 'h':	/* help */
+	default:
+	    err++;
+	    break;
+
+	case 'p':	/* read from plist */
+	    pl = optarg;
+	    break;
+
+	case 'V':	/* version */
+	    printf( "%s\n", dh_version );
+	    exit( 0 );
+
+	case 'v':	/* verbose */
+	    verbose = 1;
+	    break;
+	}
+    }
+
+    if ( pl != NULL ) {
+	if ( dh_read_plist( pl, &dhdict ) != 0 ) {
+	    exit( 2 );
+	}
+    } else  if ( ac - optind == 0 ) {
+	f = stdin;
+    } else if ( ac - optind == 1 ) {
+	if (( f = fopen( av[ optind ], "r" )) == NULL ) {
+	    perror( av[ optind ] );
+	    exit( 2 );
+	}
+    } else {
+	err++;
+    }
+
+    if ( err ) {
+	fprintf( stderr, "usage: %s [ -v ] [ -p settings_plist ] "
+		"[ settings_file ]\n", av[ 0 ] );
+	exit( 1 );
+    }
+
+    err = 0;
+    nroles = sizeof( rtm ) / sizeof( rtm[ 0 ] );
+
+    if ( dhdict != NULL ) {
+	/* apply settings from plist */
+	err = psethandler( dhdict );
+	CFRelease( dhdict );
+    } else {
+	/* apply settings from dh file */
+	err = fsethandler( f );
+	if ( ferror( f )) {
+	    perror( "fgets" );
+	    exit( 2 );
+	}
+	if ( fclose( f ) != 0 ) {
+	    perror( "fclose" );
+	    exit( 2 );
+	}
     }
 
     return( err );
