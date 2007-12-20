@@ -7,6 +7,8 @@
 [
 .BI \-hVv
 ] [
+.BI \-d\  settings_directory
+] [
 .BI \-p\  settings.plist
 ] [
 .I settings_file
@@ -132,6 +134,13 @@ The following sets Xcode as the default editor for C source files.
 .TP 19
 .B \-h
 print usage and exit.
+.TP 19
+.BI \-d\  settings_directory
+process all settings files in the directory
+.IR settings_directory .
+If the file's extension is "plist",
+.B dh
+will process the file as a property list.
 .TP 19
 .BI \-p\  settings.plist
 read settings from the XML property list

@@ -1,7 +1,8 @@
 int	parseline( char *, char *** );
 int	sethandler( CFStringRef, CFStringRef, LSRolesMask );
-int	fsethandler( FILE * );
-int	psethandler( CFDictionaryRef );
+int	fsethandler( char * );
+int	psethandler( char * );
+int	dirsethandler( char * );
 
 struct roles {
     const char		*r_role;
