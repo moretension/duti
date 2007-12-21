@@ -14,8 +14,6 @@
 #include <unistd.h>
 
 #include "handler.h"
-#include "plist.h"
-#include "util.h"
 
 extern char		*dh_version;
 extern int		nroles;
