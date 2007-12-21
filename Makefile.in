@@ -25,7 +25,7 @@ TARGETS=	dh
 MAN1TARGETS=	dh.1
 MANTARGETS=	${MAN1TARGETS}
 
-DH_OBJ=		version.o plist.o dh.o
+DH_OBJ=		version.o util.o plist.o handler.o dh.o
 
 all : ${TARGETS}
 
@@ -35,8 +35,14 @@ version.o : version.c
 dh.o : dh.c
 	${CC} ${CFLAGS} -c ${srcdir}/dh.c
 
+handler.o : handler.c
+	${CC} ${CFLAGS} -c ${srcdir}/handler.c
+
 plist.o : plist.c
 	${CC} ${CFLAGS} -c ${srcdir}/plist.c
+
+util.o : util.c
+	${CC} ${CFLAGS} -c ${srcdir}/util.c
 
 dh : ${DH_OBJ}
 	${CC} ${FRAMEWORKS} ${CFLAGS} -o dh ${DH_OBJ} ${LDFLAGS}
