@@ -114,3 +114,28 @@ cf2c( CFStringRef cfstr, char *cstr, int len )
 
     return( 0 );
 }
+
+    void
+lladd( char *path, struct ll **head )
+{
+    struct ll		*new;
+    struct ll		**cur;
+
+    if (( new = ( struct ll * )malloc( sizeof( struct ll ))) == NULL ) {
+	perror( "malloc" );
+	exit( 2 );
+    }
+    if (( new->l_path = strdup( path )) == NULL ) {
+	perror( "strdup" );
+	exit( 2 );
+    }
+
+    for ( cur = head; *cur != NULL; cur = &( *cur )->l_next ) {
+	if ( strcmp(( *cur )->l_path, new->l_path ) > 0 ) {
+	    break;
+	}
+    }
+
+    new->l_next = *cur;
+    *cur = new;
+}

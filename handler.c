@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
@@ -29,7 +30,7 @@ sethandler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 	/* something reasonable on error */
 	strcpy( cb, "bundle_id" );
     }
-    if ( cf2c( bid, ct, sizeof( ct )) != 0 ) {
+    if ( cf2c( type, ct, sizeof( ct )) != 0 ) {
 	strcpy( ct, "UTI" );
     }
 
@@ -164,7 +165,7 @@ psethandler( char *spath )
     }
 
     if (( dharray = CFDictionaryGetValue( plist, DH_KEY_SETTINGS )) == NULL ) {
-	fprintf( stderr, "plist is missing the settings array\n" );
+	fprintf( stderr, "%s is missing the settings array\n", spath );
 	CFRelease( plist );
 	return( 1 );
     }
@@ -224,10 +225,13 @@ dirsethandler( char *dirpath )
 {
     DIR			*d = NULL;
     struct dirent	*de;
+    struct ll		*head = NULL;
+    struct ll		*cur, *tmp;
+    struct stat		st;
     char		path[ MAXPATHLEN ];
     char		*p;
     int			rc = 0;
-    int			( *sh )( char * );
+    int			( *dhandler_f )( char * );
 
     if (( d = opendir( dirpath )) == NULL ) {
 	fprintf( stderr, "opendir %s: %s\n", dirpath, strerror( errno ));
@@ -245,25 +249,49 @@ dirsethandler( char *dirpath )
 	    continue;
 	}
 
-	sh = fsethandler;
-	if (( p = strrchr( path, '.' )) != NULL ) {
+	/* skip anything that isn't a file or does not resolve to a file. */
+	if ( stat( path, &st ) != 0 ) {
+	    fprintf( stderr, "stat %s: %s\n", path, strerror( errno ));
+	    continue;
+	}
+	if ( !S_ISREG( st.st_mode )) {
+	    continue;
+	}
+	
+	/*
+	 * build a sorted list of files in the directory
+	 * so the admin can dictate which order they'll
+	 * be processed, allowing handler precedence.
+	 *
+	 * HFS+ appears to store files in lexical order
+	 * on disk, but we can't count on an HFS+ volume.
+	 */
+	lladd( path, &head );
+    }
+    if ( closedir( d ) != 0 ) {
+	fprintf( stderr, "closedir: %s\n", strerror( errno ));
+	rc = 1;
+    }
+
+    for ( cur = head; cur != NULL; cur = tmp ) {
+	dhandler_f = fsethandler;
+	if (( p = strrchr( cur->l_path, '.' )) != NULL ) {
 	    p++;
 	    if ( strcmp( p, "plist" ) == 0 ) {
-		sh = psethandler;
+		dhandler_f = psethandler;
 	    }
 	}
 
 	if ( verbose ) {
-	    printf( "Processing settings from %s\n", path );
+	    printf( "Applying settings from %s\n", cur->l_path );
 	}
-	if ( sh( path ) != 0 ) {
+	if ( dhandler_f( cur->l_path ) != 0 ) {
 	    rc = 1;
 	}
-    }
 
-    if ( closedir( d ) != 0 ) {
-	fprintf( stderr, "closedir: %s\n", strerror( errno ));
-	rc = 1;
+	tmp = cur->l_next;
+	free( cur->l_path );
+	free( cur );
     }
 
     return( rc );
