@@ -7,26 +7,23 @@
 [
 .BI \-hVv
 ] [
-.BI \-d\  settings_directory
-] [
-.BI \-p\  settings.plist
-] [
-.I settings_file
+.I settings_path
 ]
 .sp
 .SH DESCRIPTION
 .B dh
 sets applications as default handlers for Apple's Uniform Type Identifiers.
-If neither
-.I settings_file
-nor
-.I settings.plist
-is given on the command line, dh reads settings lines from stdin.
+If 
+.I settings_path
+is not given on the command line, dh reads settings lines from stdin. If
+.I settings_path
+is a directory,
+.B dh
+applies settings from the files in
+.IR settings_path .
 .sp
 .SH SETTINGS FILE
-The
-.I settings_file
-is made up of lines with the following format:
+A settings file is made up of lines with the following format:
 .sp
 .br
 	app_id    UTI    role
@@ -48,11 +45,12 @@ would cause
 to set Safari as the default handler in all situations for HTML documents.
 .sp
 .SH SETTINGS PLIST
-Using
-.BI \-p\  settings.plist
-causes
+If the extension of the file given to
 .B dh
-to read default handler settings from an XML propertly list file (plist).
+is
+.IR \.plist ,
+.B dh
+treats the file as an XML property list (plist).
 The plist must contain a key-value pair, in which the key is "DHSettings"
 and the value is an array of dictionaries. Each dictionary in the array
 contains three key-value pairs representing the application's bundle ID,
@@ -135,18 +133,6 @@ The following sets Xcode as the default editor for C source files.
 .B \-h
 print usage and exit.
 .TP 19
-.BI \-d\  settings_directory
-process all settings files in the directory
-.IR settings_directory .
-If the file's extension is "plist",
-.B dh
-will process the file as a property list.
-.TP 19
-.BI \-p\  settings.plist
-read settings from the XML property list
-.I settings.plist
-instead of a plain-text settings file.
-.TP 19
 .B \-V
 print version number and exit.
 .TP 19
@@ -159,7 +145,7 @@ verbose output.
 All settings applied successfully.
 .TP 5
 1
-Some settings could not be applied.
+One or more settings could not be applied.
 .TP 5
 >1
 Error.
