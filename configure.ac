@@ -4,7 +4,7 @@
 AC_INIT(dh, INTERNAL, nosupport@all)
 AC_PREREQ(2.52)
 AC_COPYRIGHT([Copyright released into the public domain by Andrew Mortensen, December 2007.])
-AC_CONFIG_SRCDIR([dh.c])
+AC_CONFIG_SRCDIR([duti.c])
 
 AC_CANONICAL_HOST
 case $host_os in
