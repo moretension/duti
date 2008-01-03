@@ -115,6 +115,13 @@ cf2c( CFStringRef cfstr, char *cstr, int len )
     return( 0 );
 }
 
+/*
+ * lladd: insert a path into a sorted linked list.
+ *
+ * parameters:
+ *	path: char buffer containing path to insert
+ *	head: pointer to pointer at head of linked list. May be modified.
+ */
     void
 lladd( char *path, struct ll **head )
 {
