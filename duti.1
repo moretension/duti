@@ -1,0 +1,170 @@
+.TH dh "1" "_DH_BUILD_DATE" "University of Michigan" "User Commands"
+.SH NAME
+.B dh
+\- set default UTI handlers
+.SH SYNOPSIS
+.B dh
+[
+.BI \-hVv
+] [
+.I settings_path
+]
+.sp
+.SH DESCRIPTION
+.B dh
+sets applications as default handlers for Apple's Uniform Type Identifiers.
+If 
+.I settings_path
+is not given on the command line, dh reads settings lines from stdin. If
+.I settings_path
+is a directory,
+.B dh
+applies settings from the files in
+.IR settings_path .
+.sp
+.SH SETTINGS FILE
+A settings file is made up of lines with the following format:
+.sp
+.br
+	app_id    UTI    role
+.br
+.sp
+The
+.I app_id
+is a bundle ID representing the application that will act as the
+handler for documents associated with
+.IR UTI .
+For example:
+.sp
+.br
+	com.apple.Safari	public.html	all
+.br
+.sp
+would cause
+.B dh
+to set Safari as the default handler in all situations for HTML documents.
+.sp
+.SH SETTINGS PLIST
+If the extension of the file given to
+.B dh
+is
+.IR \.plist ,
+.B dh
+treats the file as an XML property list (plist).
+The plist must contain a key-value pair, in which the key is "DHSettings"
+and the value is an array of dictionaries. Each dictionary in the array
+contains three key-value pairs representing the application's bundle ID,
+the UTI and the role, respectively. A simple plist designed to set Safari
+as the default handler of HTML files would look like this:
+.sp
+.br
+	<?xml version="1.0" encoding="UTF-8"?>
+.br
+	<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+.br
+	<plist version="1.0">
+.br
+	<dict>
+.br
+		<key>DHSettings</key>
+.br
+		<array>
+.br
+			<dict>
+.br
+				<key>DHBundleIdentifier</key>
+.br
+				<string>com.apple.Safari</string>
+.br
+				<key>DHUniformTypeIdentifier</key>
+.br
+				<string>public.html</string>
+.br
+				<key>DHRole</key>
+.br
+				<string>all</string>
+.br
+			</dict>
+.br
+		</array>
+.br
+	</dict>
+.br
+.sp
+.SH ROLES
+Valid roles are defined as follows:
+.sp
+.TP 19
+.B all
+application handles all roles for the given UTI.
+.TP 19
+.B viewer
+application handles reading and displaying documents with the given UTI.
+.TP 19
+.B editor
+application can manipulate and save the item. Implies viewer.
+.TP 19
+.B shell
+application can execute the item.
+.TP 19
+.B none
+application cannot open the item, but provides an icon for the given UTI.
+.SH EXAMPLES
+The following sets TextEdit as the default viewer for Microsoft Word documents.
+.sp
+.br
+	com.apple.TextEdit    com.microsoft.word.doc    viewer
+.br
+.sp
+The following sets iHook as the default executor of shell scripts.
+.sp
+.br
+	edu.umich.iHook    public.shell-script    shell
+.br
+.sp
+The following sets Xcode as the default editor for C source files.
+.sp
+.br
+	com.apple.Xcode    public.c-source    editor
+.br
+.sp
+.SH OPTIONS
+.TP 19
+.B \-h
+print usage and exit.
+.TP 19
+.B \-V
+print version number and exit.
+.TP 19
+.B \-v
+verbose output.
+.sp
+.SH EXIT STATUS
+.TP 5
+0
+All settings applied successfully.
+.TP 5
+1
+One or more settings could not be applied.
+.TP 5
+>1
+Error.
+.sp
+.SH MORE INFO
+Mac OS X ships with a number of UTIs already defined. Most third-party
+software is responsible for defining its own UTIs. Apple documents UTIs
+in the Apple Developer Connection Library at:
+.sp
+.br
+	http://developer.apple.com/referencelibrary/
+.br
+.sp
+To get a list of UTIs on your system, you can use the following command line:
+.sp
+.br
+	`locate lsregister` -dump | grep '[[:space:]]uti:' \\
+.br
+		| awk '{ print $2 }' | sort | uniq
+.sp
+.SH SEE ALSO
+plutil(1), plist(5)
