@@ -4,12 +4,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include <sys/types.h>
-#include <sys/param.h>
-#include <ctype.h>
-#include <dirent.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -30,28 +27,20 @@ struct roles		rtm[] = {
     int
 main( int ac, char *av[] )
 {
+    struct stat		st;
     int			c, err = 0;
     char		*path = NULL;
+    char		*p;
     extern int		optind;
 
     /* by default, read from a FILE stream */
     handler_f = fsethandler;
 
-    while (( c = getopt( ac, av, "d:hVvp:" )) != -1 ) {
+    while (( c = getopt( ac, av, "hVv" )) != -1 ) {
 	switch ( c ) {
-	case 'd':	/* process settings files from directory */
-	    handler_f = dirsethandler;
-	    path = optarg;
-	    break;
-
 	case 'h':	/* help */
 	default:
 	    err++;
-	    break;
-
-	case 'p':	/* read from plist */
-	    handler_f = psethandler;
-	    path = optarg;
 	    break;
 
 	case 'V':	/* version */
@@ -71,9 +60,33 @@ main( int ac, char *av[] )
     }
 
     if ( err ) {
-	fprintf( stderr, "usage: %s [ -hvV ] [ -d settings_directory ] "
-		"[ -p settings_plist ] [ settings_file ]\n", av[ 0 ] );
+	fprintf( stderr, "usage: %s [ -hvV ] [ settings_path ]\n", av[ 0 ] );
 	exit( 1 );
+    }
+
+    if ( path ) {
+	if ( stat( path, &st ) != 0 ) {
+	    fprintf( stderr, "stat %s: %s\n", path, strerror( errno ));
+	    exit( 2 );
+	}
+	switch ( st.st_mode & S_IFMT ) {
+	case S_IFDIR:	/* directory of settings files */
+	    handler_f = dirsethandler;
+	    break;
+
+	case S_IFREG:	/* settings file or plist */
+	    if (( p = strrchr( path, '.' )) != NULL ) {
+		p++;
+		if ( strcmp( p, "plist" ) == 0 ) {
+		    handler_f = psethandler;
+		}
+	    }
+	    break;
+
+	default:
+	    fprintf( stderr, "%s: not a supported settings path\n", path );
+	    exit( 1 );
+	}
     }
 
     nroles = sizeof( rtm ) / sizeof( rtm[ 0 ] );
