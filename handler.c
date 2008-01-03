@@ -28,10 +28,10 @@ sethandler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
     /* get C strings to use in output. CFShow is inadequate. */
     if ( cf2c( bid, cb, sizeof( cb )) != 0 ) {
 	/* something reasonable on error */
-	strcpy( cb, "bundle_id" );
+	strlcpy( cb, "bundle_id", sizeof( cb ));
     }
     if ( cf2c( type, ct, sizeof( ct )) != 0 ) {
-	strcpy( ct, "UTI" );
+	strlcpy( ct, "UTI", sizeof( ct ));
     }
 
     if ( verbose ) {
@@ -260,7 +260,7 @@ dirsethandler( char *dirpath )
 	
 	/*
 	 * build a sorted list of files in the directory
-	 * so the admin can dictate which order they'll
+	 * so the admin can dictate in what order they'll
 	 * be processed, allowing handler precedence.
 	 *
 	 * HFS+ appears to store files in lexical order
