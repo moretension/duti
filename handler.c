@@ -154,7 +154,7 @@ psethandler( char *spath )
 	return( 1 );
     }
 
-    if ( dh_read_plist( spath, &plist ) != 0 ) {
+    if ( read_plist( spath, &plist ) != 0 ) {
 	fprintf( stderr, "%s: failed to read plist\n", __FUNCTION__ );
 	return( 1 );
     }
@@ -164,7 +164,8 @@ psethandler( char *spath )
 	return( 1 );
     }
 
-    if (( dharray = CFDictionaryGetValue( plist, DH_KEY_SETTINGS )) == NULL ) {
+    if (( dharray = CFDictionaryGetValue( plist,
+			DUTI_KEY_SETTINGS )) == NULL ) {
 	fprintf( stderr, "%s is missing the settings array\n", spath );
 	CFRelease( plist );
 	return( 1 );
@@ -175,17 +176,17 @@ psethandler( char *spath )
 	dhentry = CFArrayGetValueAtIndex( dharray, index );
 
 	if (( bid = CFDictionaryGetValue( dhentry,
-			DH_KEY_BUNDLEID )) == NULL ) {
+			DUTI_KEY_BUNDLEID )) == NULL ) {
 	    fprintf( stderr, "Entry %d missing bundle ID\n", ( int )index );
 	    rc = 1;
 	    continue;
 	}
-	if (( uti = CFDictionaryGetValue( dhentry, DH_KEY_UTI )) == NULL ) {
+	if (( uti = CFDictionaryGetValue( dhentry, DUTI_KEY_UTI )) == NULL ) {
 	    fprintf( stderr, "Entry %d missing UTI\n", ( int )index );
 	    rc = 1;
 	    continue;
 	}
-	if (( role = CFDictionaryGetValue( dhentry, DH_KEY_ROLE )) == NULL ) {
+	if (( role = CFDictionaryGetValue( dhentry, DUTI_KEY_ROLE )) == NULL ) {
 	    fprintf( stderr, "Entry %d missing role\n", ( int )index );
 	    rc = 1;
 	    continue;

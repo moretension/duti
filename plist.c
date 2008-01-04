@@ -8,7 +8,7 @@
 #include "plist.h"
 
     int
-dh_read_plist( char *plpath, CFDictionaryRef *dr )
+read_plist( char *plpath, CFDictionaryRef *dr )
 {
     CFURLRef		cfurl = NULL;
     CFReadStreamRef	cfrs = NULL;
