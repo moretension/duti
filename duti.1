@@ -1,9 +1,9 @@
-.TH dh "1" "_DH_BUILD_DATE" "University of Michigan" "User Commands"
+.TH duti "1" "_DUTI_BUILD_DATE" "University of Michigan" "User Commands"
 .SH NAME
-.B dh
+.B duti
 \- set default UTI handlers
 .SH SYNOPSIS
-.B dh
+.B duti
 [
 .BI \-hVv
 ] [
@@ -11,14 +11,16 @@
 ]
 .sp
 .SH DESCRIPTION
-.B dh
+.B duti
 sets applications as default handlers for Apple's Uniform Type Identifiers.
 If 
 .I settings_path
-is not given on the command line, dh reads settings lines from stdin. If
+is not given on the command line,
+.B duti
+reads settings lines from stdin. If
 .I settings_path
 is a directory,
-.B dh
+.B duti
 applies settings from the files in
 .IR settings_path .
 .sp
@@ -41,17 +43,17 @@ For example:
 .br
 .sp
 would cause
-.B dh
+.B duti
 to set Safari as the default handler in all situations for HTML documents.
 .sp
 .SH SETTINGS PLIST
 If the extension of the file given to
-.B dh
+.B duti
 is
 .IR \.plist ,
-.B dh
+.B duti
 treats the file as an XML property list (plist).
-The plist must contain a key-value pair, in which the key is "DHSettings"
+The plist must contain a key-value pair, in which the key is "DUTISettings"
 and the value is an array of dictionaries. Each dictionary in the array
 contains three key-value pairs representing the application's bundle ID,
 the UTI and the role, respectively. A simple plist designed to set Safari
@@ -66,21 +68,21 @@ as the default handler of HTML files would look like this:
 .br
 	<dict>
 .br
-		<key>DHSettings</key>
+		<key>DUTISettings</key>
 .br
 		<array>
 .br
 			<dict>
 .br
-				<key>DHBundleIdentifier</key>
+				<key>DUTIBundleIdentifier</key>
 .br
 				<string>com.apple.Safari</string>
 .br
-				<key>DHUniformTypeIdentifier</key>
+				<key>DUTIUniformTypeIdentifier</key>
 .br
 				<string>public.html</string>
 .br
-				<key>DHRole</key>
+				<key>DUTIRole</key>
 .br
 				<string>all</string>
 .br
