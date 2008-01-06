@@ -73,6 +73,51 @@ install : all
 	-mkdir -p ${DESTDIR}${MANDIR}/man1
 	${INSTALL} -m 0644 -c ${MAN1TARGETS} ${DESTDIR}${MANDIR}/man1/
 
+PKGNAME=	duti-${VERSION}
+PKGDIR=		tmp/duti-installer
+PKGRSRC=	$(wildcard pkg-resources/*.rtf)
+PKGINFODIR=	tmp/Info
+PKGINFO=	pkg-resources/Description.plist pkg-resources/Info.plist
+DEVUTILS=	/Developer/Applications/Utilities
+PKGMKR=		${DEVUTILS}/PackageMaker.app/Contents/MacOS/packagemaker
+
+package : all
+	-mkdir -p -m 0755 ${PKGDIR}/${BINDIR}
+	for i in ${TARGETS}; do \
+	    ${INSTALL} -m 0755 -c $$i ${PKGDIR}/${BINDIR}/; \
+	done
+	-mkdir -p -m 0755 ${PKGDIR}/${MANDIR}
+	-mkdir -p -m 0755 ${PKGDIR}/${MANDIR}/man1
+	for i in ${MANTARGETS}; do \
+	    ${INSTALL} -m 0644 $$i ${PKGDIR}/${MANDIR}/man1/; \
+	    sed -e 's@_DUTI_BUILD_DATE@${DUTI_BUILD_DATE}@g' \
+		    ${PKGDIR}/${MANDIR}/man1/$$i > \
+		    ${PKGDIR}/${MANDIR}/man1/$$i.tmp; \
+	    mv -f ${PKGDIR}/${MANDIR}/man1/$$i.tmp \
+		    ${PKGDIR}/${MANDIR}/man1/$$i; \
+	done
+	-mkdir -p -m 0755 ${PKGINFODIR}
+	for i in ${PKGINFO}; do \
+	    sed -e 's@_DUTI_VERSION@${VERSION}@g' $$i \
+			> ${PKGINFODIR}/`basename $$i`; \
+	done
+	for i in ${PKGRSRC}; do \
+	    ${INSTALL} -m 0644 -c $$i ${PKGINFODIR}/`basename $$i`; \
+	done
+	sudo chown -R root:wheel ${PKGDIR}
+	sudo chgrp admin ${PKGDIR}
+	${PKGMKR} -build -p ../${PKGNAME}.pkg \
+	    -f ${PKGDIR} -r ${PKGINFODIR} \
+	    -i ${PKGINFODIR}/Info.plist \
+	    -d ${PKGINFODIR}/Description.plist
+	tar cvfz ../${PKGNAME}.pkg.tar.gz ../${PKGNAME}.pkg
+	sudo rm -rf tmp
+	for c in sha1 rmd160 md5; do \
+	    (cd ..; openssl $$c ${PKGNAME}.pkg.tar.gz); \
+	done
+
+pkg : package
+
 clean :
 	rm -f *.o a.out core
 	rm -f ${TARGETS}
