@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IFPkgDescriptionDeleteWarning</key>
+	<string></string>
+	<key>IFPkgDescriptionDescription</key>
+	<string>A command-line utility designed to set default applications for various document types on Mac OS X.</string>
+	<key>IFPkgDescriptionTitle</key>
+	<string>duti _DUTI_VERSION</string>
+	<key>IFPkgDescriptionVersion</key>
+	<string>_DUTI_VERSION</string>
+</dict>
+</plist>
