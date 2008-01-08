@@ -8,7 +8,7 @@
 # This configure script is free software; the Free Software Foundation
 # gives unlimited permission to copy, distribute and modify it.
 #
-# Copyright released into the public domain by Andrew Mortensen, December 2007.
+# Copyright released into the public domain by Andrew Mortensen, January 2008.
 ## --------------------- ##
 ## M4sh Initialization.  ##
 ## --------------------- ##
@@ -926,7 +926,7 @@ Copyright (C) 2003 Free Software Foundation, Inc.
 This configure script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it.
 
-Copyright released into the public domain by Andrew Mortensen, December 2007.
+Copyright released into the public domain by Andrew Mortensen, January 2008.
 _ACEOF
   exit 0
 fi
