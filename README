@@ -6,11 +6,13 @@ UTI is a unique string describing the format of a file's content. For instance,
 a Microsoft Word document has a UTI of com.microsoft.word.doc. Using duti, the
 user can change which application acts as the default handler for a given UTI.
 
+
 * Compiling
 
     ./configure
     make
     sudo make install
+
 
 * Usage
 
@@ -18,8 +20,12 @@ user can change which application acts as the default handler for a given UTI.
 2) a settings file; or 3) a Mac OS X XML property list (plist). A settings
 line, as read in cases 1 and 2, consists of an application's bundle ID, a UTI,
 and a string describing what role the application handles for the given UTI.
-The process is similar when duti processes a plist. See the man page for
-additional usage details.
+The process is similar when duti processes a plist. If the path given to duti
+on the command-line is a directory, duti will apply settings from all valid
+settings files in that directory, excluding files whose names begin with '.'.
+
+See the man page for additional usage details.
+
 
 * Examples
 
@@ -33,6 +39,7 @@ additional usage details.
 	com.apple.TextEdit	com.microsoft.word.doc	all
 	^D
 
+
 * Support
 
     duti is unsupported. You can submit bug reports and feature requests at the
@@ -40,9 +47,13 @@ duti SourceForge project page:
 
     https://sourceforge.net/projects/duti/
 
+
 * License
 
     duti is released into the public domain by Andrew Mortensen, 2008. It's
 provided as is without warranties of any kind. You can do anything you want
 with it. If you incorporate some or all of the code into another project, I'd
 appreciate credit for the work I've done, but that's all.
+
+Andrew Mortensen
+January 2008
