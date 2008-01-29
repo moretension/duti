@@ -7,6 +7,10 @@
 [
 .BI \-hVv
 ] [
+.BI \-d\  uti
+] [
+.BI \-l\  uti
+] [
 .I settings_path
 ]
 .sp
@@ -132,8 +136,18 @@ The following sets Xcode as the default editor for C source files.
 .sp
 .SH OPTIONS
 .TP 19
+.BI \-d\  uti
+display the default handler for
+.I uti
+and exit.
+.TP 19
 .B \-h
 print usage and exit.
+.TP 19
+.BI \-l\  uti
+display all handlers for
+.I uti
+and exit.
 .TP 19
 .B \-V
 print version number and exit.
@@ -144,10 +158,10 @@ verbose output.
 .SH EXIT STATUS
 .TP 5
 0
-All settings applied successfully.
+All settings applied or displayed successfully.
 .TP 5
 1
-One or more settings could not be applied.
+Settings could not be applied, or the UTI has no handler.
 .TP 5
 >1
 Error.
