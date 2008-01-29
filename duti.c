@@ -12,7 +12,7 @@
 
 #include "handler.h"
 
-extern char		*dh_version;
+extern char		*duti_version;
 extern int		nroles;
 int			verbose = 0;
 
@@ -33,9 +33,6 @@ main( int ac, char *av[] )
     char		*p;
     extern int		optind;
 
-    /* by default, read from a FILE stream */
-    handler_f = fsethandler;
-
     while (( c = getopt( ac, av, "hVv" )) != -1 ) {
 	switch ( c ) {
 	case 'h':	/* help */
@@ -44,7 +41,7 @@ main( int ac, char *av[] )
 	    break;
 
 	case 'V':	/* version */
-	    printf( "%s\n", dh_version );
+	    printf( "%s\n", duti_version );
 	    exit( 0 );
 
 	case 'v':	/* verbose */
@@ -55,14 +52,15 @@ main( int ac, char *av[] )
 
     if ( ac - optind == 1 ) {
 	path = av[ optind ];
-    } else if ( path == NULL && err ) {
-	err++;
     }
 
     if ( err ) {
 	fprintf( stderr, "usage: %s [ -hvV ] [ settings_path ]\n", av[ 0 ] );
 	exit( 1 );
     }
+
+    /* by default, read from a FILE stream */
+    handler_f = fsethandler;
 
     if ( path ) {
 	if ( stat( path, &st ) != 0 ) {

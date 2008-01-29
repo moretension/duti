@@ -1,1 +1,1 @@
-const char		*dh_version = "@PACKAGE_VERSION@";
+const char		*duti_version = "@PACKAGE_VERSION@";
