@@ -9,4 +9,5 @@ int		sethandler( CFStringRef, CFStringRef, LSRolesMask );
 int		fsethandler( char * );
 int		psethandler( char * );
 int		dirsethandler( char * );
-int		( *handler_f )( char * );
+
+int		uti_handler_show( char *uti, int showall );

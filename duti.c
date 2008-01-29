@@ -29,16 +29,23 @@ main( int ac, char *av[] )
 {
     struct stat		st;
     int			c, err = 0;
+    int			( *handler_f )( char * );
     char		*path = NULL;
     char		*p;
     extern int		optind;
 
-    while (( c = getopt( ac, av, "hVv" )) != -1 ) {
+    while (( c = getopt( ac, av, "d:l:hVv" )) != -1 ) {
 	switch ( c ) {
+	case 'd':	/* show default handler for UTI */
+	    return( uti_handler_show( optarg, 0 ));
+
 	case 'h':	/* help */
 	default:
 	    err++;
 	    break;
+
+	case 'l':	/* list all handlers for UTI */
+	    return( uti_handler_show( optarg, 1 ));
 
 	case 'V':	/* version */
 	    printf( "%s\n", duti_version );
