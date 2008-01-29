@@ -62,7 +62,8 @@ main( int ac, char *av[] )
     }
 
     if ( err ) {
-	fprintf( stderr, "usage: %s [ -hvV ] [ settings_path ]\n", av[ 0 ] );
+	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -l uti ] "
+			 "[ settings_path ]\n", av[ 0 ] );
 	exit( 1 );
     }
 
