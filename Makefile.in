@@ -16,6 +16,7 @@ CC=		@CC@
 FRAMEWORKS=	-framework ApplicationServices -framework CoreFoundation
 OPTOPTS=	-isysroot @macosx_sdk@ \
 			-arch i386 -arch ppc \
+			-mmacosx-version-min=@macosx_dep_target@ \
 			@OPTOPTS@
 
 LIBS=		@LIBS@

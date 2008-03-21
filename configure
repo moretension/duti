@@ -643,6 +643,7 @@ target_cpu
 target_vendor
 target_os
 macosx_sdk
+macosx_dep_target
 OPTOPTS
 LIBOBJS
 LTLIBOBJS'
@@ -1230,7 +1231,9 @@ if test -n "$ac_init_help"; then
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-macosx_sdk=DIR   path to SDK
+  --with-macosx-sdk=DIR   path to SDK
+  --with-macosx-deployment-target=VERSION
+                          OS version
 
 Some influential environment variables:
   CC          C compiler command
@@ -2884,10 +2887,8 @@ test -n "$target_alias" &&
 
     { echo "$as_me:$LINENO: checking which SDK to use" >&5
 echo $ECHO_N "checking which SDK to use... $ECHO_C" >&6; }
-    macosx_sdks="/Developer/SDKs/MacOSX10.4u.sdk \
-		 /Developer/SDKs/MacOSX10.5.sdk"
 
-# Check whether --with-macosx_sdk was given.
+# Check whether --with-macosx-sdk was given.
 if test "${with_macosx_sdk+set}" = set; then
   withval=$with_macosx_sdk; macosx_sdk="$withval"
 fi
@@ -2915,6 +2916,35 @@ echo "$as_me: error: ${host_os} is not a supported system" >&2;}
 
     { echo "$as_me:$LINENO: result: $macosx_sdk" >&5
 echo "${ECHO_T}$macosx_sdk" >&6; }
+
+
+    { echo "$as_me:$LINENO: checking Mac OS X deployment target" >&5
+echo $ECHO_N "checking Mac OS X deployment target... $ECHO_C" >&6; }
+
+
+# Check whether --with-macosx-deployment-target was given.
+if test "${with_macosx_deployment_target+set}" = set; then
+  withval=$with_macosx_deployment_target; macosx_dep_target="$withval"
+fi
+
+
+    case "${host_os}" in
+	darwin8*)
+	    dep_target="10.4"
+	    ;;
+
+	darwin9*)
+	    dep_target="10.5"
+	    ;;
+    esac
+
+    if test -z "$macosx_dep_target"; then
+	macosx_dep_target=$dep_target
+    fi
+
+
+    { echo "$as_me:$LINENO: result: $macosx_dep_target" >&5
+echo "${ECHO_T}$macosx_dep_target" >&6; }
 
 
 # function checks
@@ -3711,12 +3741,13 @@ target_cpu!$target_cpu$ac_delim
 target_vendor!$target_vendor$ac_delim
 target_os!$target_os$ac_delim
 macosx_sdk!$macosx_sdk$ac_delim
+macosx_dep_target!$macosx_dep_target$ac_delim
 OPTOPTS!$OPTOPTS$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 65; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 66; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
