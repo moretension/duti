@@ -1,4 +1,4 @@
-/* dh: set default handlers for document types based on a settings file. */
+/* duti: set default handlers for document types based on a settings file. */
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -57,7 +57,7 @@ main( int ac, char *av[] )
 	}
     }
 
-    if ( ac - optind == 1 ) {
+    if (( ac - optind ) == 1 ) {
 	path = av[ optind ];
     }
 
