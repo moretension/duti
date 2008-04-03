@@ -16,7 +16,8 @@
 .sp
 .SH DESCRIPTION
 .B duti
-sets applications as default handlers for Apple's Uniform Type Identifiers.
+sets applications as default handlers for Apple's Uniform Type Identifiers
+and for URL schemes.
 If 
 .I settings_path
 is not given on the command line,
@@ -49,7 +50,26 @@ For example:
 would cause
 .B duti
 to set Safari as the default handler in all situations for HTML documents.
+A settings file can also contain lines with this format:
 .sp
+.br
+	app_id    url_scheme
+.br
+.sp
+In this case,
+.I app_id
+is again a bundle ID, this time for the application that will act as the
+default handler for
+.IR url_scheme .
+For example:
+.sp
+.br
+	org.mozilla.Firefox     ftp
+.br
+.sp
+would cause
+.B duti
+to set Firefox as the handler for "ftp://" URLs.
 .SH SETTINGS PLIST
 If the extension of the file given to
 .B duti
@@ -60,8 +80,11 @@ treats the file as an XML property list (plist).
 The plist must contain a key-value pair, in which the key is "DUTISettings"
 and the value is an array of dictionaries. Each dictionary in the array
 contains three key-value pairs representing the application's bundle ID,
-the UTI and the role, respectively. A simple plist designed to set Safari
-as the default handler of HTML files would look like this:
+the UTI and the role, respectively. Alternatively, a dictionary in the array
+may contain two key-value pairs representing the application's bundle ID,
+and the URL scheme. A simple plist designed to set Safari as the default
+handler of HTML files, and Firefox as the default handler for "ftp://" URLs,
+would look like this:
 .sp
 .br
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -89,6 +112,18 @@ as the default handler of HTML files would look like this:
 				<key>DUTIRole</key>
 .br
 				<string>all</string>
+.br
+			</dict>
+.br
+			<dict>
+.br
+				<key>DUTIBundleIdentifier</key>
+.br
+				<string>org.mozilla.Firefox</string>
+.br
+				<key>DUTIURLScheme</key>
+.br
+				<string>ftp</string>
 .br
 			</dict>
 .br
