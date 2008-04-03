@@ -19,7 +19,7 @@ extern struct roles	rtm[];
 int			nroles;
 
     int
-sethandler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
+set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 {
     OSStatus		rc;
     char		cb[ MAXPATHLEN ];
@@ -48,15 +48,43 @@ sethandler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 }
 
     int
+set_url_handler( CFStringRef bid, CFStringRef url_scheme )
+{
+    OSStatus		rc;
+    char		cb[ MAXPATHLEN ];
+    char		cu[ MAXPATHLEN ];
+
+    if ( cf2c( bid, cb, sizeof( cb )) != 0 ) {
+	strlcpy( cb, "bundle_id", sizeof( cb ));
+    }
+    if ( cf2c( url_scheme, cu, sizeof( cu )) != 0 ) {
+	strlcpy( cu, "url_scheme", sizeof( cu ));
+    }
+
+    if ( verbose ) {
+	printf( "setting %s as handler for %s:// URLs\n", cb, cu );
+    }
+
+    rc = LSSetDefaultHandlerForURLScheme( url_scheme, bid );
+    if ( rc != noErr ) {
+	fprintf( stderr, "failed to set %s as handler "
+		 "for %s:// (error %d)\n", cb, cu, ( int )rc );
+    }
+
+    return(( int )rc );
+}
+
+    int
 fsethandler( char *spath )
 {
     FILE	*f = NULL;
     char	line[ MAXPATHLEN * 2 ];
-    char	*handler, *doctype, *role;
+    char	*handler, *type, *role;
     char	**lineav = NULL;
-    int		i, len, linenum = 0, rc = 0;
+    int		i = 0, linenum = 0, rc = 0;
+    int		len, htype;
 
-    CFStringRef	bid = NULL, type = NULL;
+    CFStringRef	bid = NULL, cftype = NULL;
 
     if ( spath != NULL ) {
 	if (( f = fopen( spath, "r" )) == NULL ) {
@@ -82,47 +110,63 @@ fsethandler( char *spath )
 	    continue;
 	}
 	
-	if ( parseline( line, &lineav ) != 0 ) {
+	htype = parseline( line, &lineav );
+	switch ( htype ) {
+	case DUTI_TYPE_UTI_HANDLER:
+	    handler = lineav[ 0 ];
+	    type = lineav[ 1 ];
+	    role = lineav[ 2 ];
+
+	    for ( i = 0; i < nroles; i++ ) {
+		if ( strcasecmp( role, rtm[ i ].r_role ) == 0 ) {
+		    break;
+		}
+	    }
+	    if ( i >= nroles ) {
+		fprintf( stderr, "line %d: role \"%s\" unrecognized\n",
+			    linenum, role );
+		rc = 1;
+		continue;
+	    }
+	    break;
+
+	case DUTI_TYPE_URL_HANDLER:
+	    handler = lineav[ 0 ];
+	    type = lineav[ 1 ];
+	    break;
+
+	default:
 	    fprintf( stderr, "line %d: parsing failed\n", linenum );
 	    rc = 1;
 	    continue;
 	}
 
-	handler = lineav[ 0 ];
-	doctype = lineav[ 1 ];
-	role = lineav[ 2 ];
-
-	for ( i = 0; i < nroles; i++ ) {
-	    if ( strcasecmp( role, rtm[ i ].r_role ) == 0 ) {
-		break;
-	    }
-	}
-	if ( i >= nroles ) {
-	    fprintf( stderr, "line %d: role \"%s\" unrecognized\n",
-			linenum, role );
-	    rc = 1;
-	    continue;
-	}
-
-	/* must have a CF representation of the role handler and doctype */
+	/* must have a CF representation of the role handler and type */
 	if ( c2cf( handler, &bid ) != 0 ) {
 	    rc = 1;
 	    goto cleanup;
 	}
-	if ( c2cf( doctype, &type ) != 0 ) {
+	if ( c2cf( type, &cftype ) != 0 ) {
 	    rc = 1;
 	    goto cleanup;
 	}
-	if ( sethandler( bid, type, rtm[ i ].r_mask ) != 0 ) {
-	    rc = 1;
+
+	if ( htype == DUTI_TYPE_UTI_HANDLER ) {
+	    if ( set_uti_handler( bid, cftype, rtm[ i ].r_mask ) != 0 ) {
+		rc = 1;
+	    }
+	} else if ( htype == DUTI_TYPE_URL_HANDLER ) {
+	    if ( set_url_handler( bid, cftype ) != 0 ) {
+		rc = 1;
+	    }
 	}
 
 cleanup:
 	if ( bid != NULL ) {
 	    CFRelease( bid );
 	}
-	if ( type != NULL ) {
-	    CFRelease( type );
+	if ( cftype != NULL ) {
+	    CFRelease( cftype );
 	}
     }
     if ( ferror( f )) {
@@ -143,10 +187,11 @@ psethandler( char *spath )
     CFDictionaryRef	plist;
     CFArrayRef		dharray;
     CFDictionaryRef	dhentry;
-    CFStringRef		bid, uti, role;
+    CFStringRef		bid, uti, role, url_scheme;
     CFIndex		count, index;
 
     int			i, rc = 0;
+    int			htype = DUTI_TYPE_UTI_HANDLER;
     char		crole[ 255 ];
 
     if ( !spath ) {
@@ -181,36 +226,49 @@ psethandler( char *spath )
 	    rc = 1;
 	    continue;
 	}
-	if (( uti = CFDictionaryGetValue( dhentry, DUTI_KEY_UTI )) == NULL ) {
-	    fprintf( stderr, "Entry %d missing UTI\n", ( int )index );
-	    rc = 1;
-	    continue;
-	}
-	if (( role = CFDictionaryGetValue( dhentry, DUTI_KEY_ROLE )) == NULL ) {
-	    fprintf( stderr, "Entry %d missing role\n", ( int )index );
+	if (( url_scheme = CFDictionaryGetValue( dhentry,
+				DUTI_KEY_URLSCHEME )) != NULL ) {
+	    htype = DUTI_TYPE_URL_HANDLER;
+	} else if (( uti = CFDictionaryGetValue( dhentry,
+				DUTI_KEY_UTI )) != NULL ) {
+	    if (( role = CFDictionaryGetValue( dhentry,
+				DUTI_KEY_ROLE )) == NULL ) {
+		fprintf( stderr, "Entry %d missing role\n", ( int )index );
+		rc = 1;
+		continue;
+	    }
+	    htype = DUTI_TYPE_UTI_HANDLER;
+	} else {
+	    fprintf( stderr, "Entry %d invalid\n", ( int )index );
 	    rc = 1;
 	    continue;
 	}
 
-	/* get C string form of role to look up LSRoleMask */
-	if ( cf2c( role, crole, sizeof( crole )) != 0 ) {
-	    rc = 1;
-	    continue;
-	}
-	for ( i = 0; i < nroles; i++ ) {
-            if ( strcasecmp( crole, rtm[ i ].r_role ) == 0 ) {
-                break;
-            }
-        }
-        if ( i >= nroles ) {
-            fprintf( stderr, "entry %d: role \"%s\" unrecognized\n",
-                        ( int )index, crole );
-            rc = 1;
-            continue;
-        }	
+	if ( htype == DUTI_TYPE_UTI_HANDLER ) {
+	    /* get C string form of role to look up LSRoleMask */
+	    if ( cf2c( role, crole, sizeof( crole )) != 0 ) {
+		rc = 1;
+		continue;
+	    }
+	    for ( i = 0; i < nroles; i++ ) {
+		if ( strcasecmp( crole, rtm[ i ].r_role ) == 0 ) {
+		    break;
+		}
+	    }
+	    if ( i >= nroles ) {
+		fprintf( stderr, "entry %d: role \"%s\" unrecognized\n",
+			    ( int )index, crole );
+		rc = 1;
+		continue;
+	    }	
 
-	if ( sethandler( bid, uti, rtm[ i ].r_mask ) != 0 ) {
-	    rc = 1;
+	    if ( set_uti_handler( bid, uti, rtm[ i ].r_mask ) != 0 ) {
+		rc = 1;
+	    }
+	} else if ( htype == DUTI_TYPE_URL_HANDLER ) {
+	    if ( set_url_handler( bid, url_scheme ) != 0 ) {
+		rc = 1;
+	    }
 	}
     }
 

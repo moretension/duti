@@ -25,7 +25,7 @@ parseline( char *line, char ***lineav )
     int			i; 
 
     if ( pav == NULL ) {
-	if (( pav = ( char ** )malloc( 3 * sizeof( char * ))) == NULL ) {
+	if (( pav = ( char ** )malloc( 5 * sizeof( char * ))) == NULL ) {
 	    perror( "malloc" );
 	    exit( 2 );
 	}
@@ -44,13 +44,10 @@ parseline( char *line, char ***lineav )
 	    break;
 	}
     }
-    if ( i != 3 ) {
-	return( -1 );
-    }
 
     *lineav = pav;
 
-    return( 0 );
+    return( i );
 }
 
 /*
