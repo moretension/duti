@@ -16,13 +16,14 @@ user can change which application acts as the default handler for a given UTI.
 
 * Usage
 
-    duti can read settings from three different sources: 1) standard input;
-2) a settings file; or 3) a Mac OS X XML property list (plist). A settings
-line, as read in cases 1 and 2, consists of an application's bundle ID, a UTI,
-and a string describing what role the application handles for the given UTI.
-The process is similar when duti processes a plist. If the path given to duti
-on the command-line is a directory, duti will apply settings from all valid
-settings files in that directory, excluding files whose names begin with '.'.
+    duti can read settings from four different sources: 1) standard input;
+2) a settings file; 3) a Mac OS X XML property list (plist); 4) command-line
+arguments. A settings line, as read in cases 1 and 2, consists of an
+application's bundle ID, a UTI, and a string describing what role the
+application handles for the given UTI. The process is similar when duti
+processes a plist. If the path given to duti on the command-line is a
+directory, duti will apply settings from all valid settings files in that
+directory, excluding files whose names begin with '.'.
 
 See the man page for additional usage details.
 
@@ -30,14 +31,15 @@ See the man page for additional usage details.
 * Examples
 
     Set Safari as the default handler for HTML documents:
-	% duti
-	com.apple.Safari	public.html	all
-	^D
+	% duti -s com.apple.Safari public.html all
 
     Set TextEdit as the default handler for Word documents:
 	% duti
 	com.apple.TextEdit	com.microsoft.word.doc	all
 	^D
+
+    Set Finder as the default handler for ftp:// URLs:
+	% duti -s com.apple.Finder ftp
 
 
 * Support
@@ -56,4 +58,4 @@ with it. If you incorporate some or all of the code into another project, I'd
 appreciate credit for the work I've done, but that's all.
 
 Andrew Mortensen
-January 2008
+October 2008
