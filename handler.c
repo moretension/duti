@@ -34,6 +34,11 @@ set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 	strlcpy( ct, "UTI", sizeof( ct ));
     }
 
+    if ( !UTTypeConformsTo( type, kUTTypeItem )) {
+	fprintf( stderr, "%s does not conform to the UTI specification\n", ct );
+	return( 1 );
+    }
+
     if ( verbose ) {
 	printf( "setting %s as handler for %s\n", cb, ct );
     }
