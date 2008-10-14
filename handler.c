@@ -34,8 +34,9 @@ set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 	strlcpy( ct, "UTI", sizeof( ct ));
     }
 
-    if ( !UTTypeConformsTo( type, kUTTypeItem )) {
-	fprintf( stderr, "%s does not conform to the UTI specification\n", ct );
+    if ( !UTTypeConformsTo( type, kUTTypeItem ) &&
+		!UTTypeConformsTo( type, kUTTypeContent )) {
+	fprintf( stderr, "%s does not conform to any UTI hierarchy\n", ct );
 	return( 1 );
     }
 
