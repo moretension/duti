@@ -14,6 +14,14 @@
 .I settings_path
 ]
 .sp
+.B duti
+.BI \-s
+.I bundle_id
+.I uti_or_url_scheme
+[
+.I role
+]
+.sp
 .SH DESCRIPTION
 .B duti
 sets applications as default handlers for Apple's Uniform Type Identifiers
@@ -28,6 +36,20 @@ is a directory,
 .B duti
 applies settings from the files in
 .IR settings_path .
+The
+.BI \-s
+flag tells
+.B duti
+to set a handler based on arguments from the command line. Two arguments
+following
+.BI \-s
+means that
+.B duti
+will set the handler for a URL scheme. Three arguments means
+.B duti
+will set the handler for a UTI. See
+.B EXAMPLES
+below for usage cases.
 .sp
 .SH SETTINGS FILE
 A settings file is made up of lines with the following format:
@@ -151,19 +173,40 @@ application can execute the item.
 .B none
 application cannot open the item, but provides an icon for the given UTI.
 .SH EXAMPLES
-The following sets TextEdit as the default viewer for Microsoft Word documents.
+Running
+.B duti
+with
+.BI \-s
+:
+.sp
+.br
+	# Set Safari as the default handler for HTML documents
+.br
+	duti -s com.apple.Safari public.html all
+.br
+.sp
+	# Set Finder as the default handler for the ftp:// URL scheme
+.br
+	duti -s com.apple.Finder ftp
+.sp
+
+The following examples can be used by passing them to
+.B duti
+on stdin or as lines in a .duti file.
+.sp
+Set TextEdit as the default viewer for Microsoft Word documents:
 .sp
 .br
 	com.apple.TextEdit    com.microsoft.word.doc    viewer
 .br
 .sp
-The following sets iHook as the default executor of shell scripts.
+Set iHook as the default executor of shell scripts:
 .sp
 .br
 	edu.umich.iHook    public.shell-script    shell
 .br
 .sp
-The following sets Xcode as the default editor for C source files.
+Set Xcode as the default editor for C source files:
 .sp
 .br
 	com.apple.Xcode    public.c-source    editor
@@ -183,6 +226,9 @@ print usage and exit.
 display all handlers for
 .I uti
 and exit.
+.TP 19
+.BI \-s
+set the handler from data provided on the command line.
 .TP 19
 .B \-V
 print version number and exit.

@@ -431,3 +431,56 @@ uti_show_done:
 
     return( rc );
 }
+
+    int
+duti_handler_set( char *bid, char *type, char *role )
+{
+    CFStringRef		cf_bid = NULL;
+    CFStringRef		cf_type = NULL;
+    int			rc = 0;
+    int			i = 0;
+
+    if ( role != NULL ) {
+	for ( i = 0; i < nroles; i++ ) {
+	    if ( strcasecmp( role, rtm[ i ].r_role ) == 0 ) {
+		break;
+	    }
+	}
+	if ( i >= nroles ) {
+	    fprintf( stderr, "role \"%s\" unrecognized\n", role );
+	    return( 2 );
+	}
+    }
+
+    if ( c2cf( bid, &cf_bid ) != 0 ) {
+	rc = 2;
+	goto duti_set_cleanup;
+    }
+    if ( c2cf( type, &cf_type ) != 0 ) {
+	rc = 2;
+	goto duti_set_cleanup;
+    }
+
+    if ( role != NULL ) {
+	/* set UTI handler */
+	if (( rc = set_uti_handler( cf_bid, cf_type,
+					rtm[ i ].r_mask )) != 0 ) {
+	    rc = 2;
+	}
+    } else {
+	/* set URL scheme handler */
+	if (( rc = set_url_handler( cf_bid, cf_type )) != 0 ) {
+	    rc = 2;
+	}
+    }
+
+duti_set_cleanup:
+    if ( cf_bid != NULL ) {
+	CFRelease( cf_bid );
+    }
+    if ( cf_type != NULL ) {
+	CFRelease( cf_type );
+    }
+
+    return( rc );
+}

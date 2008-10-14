@@ -29,12 +29,13 @@ main( int ac, char *av[] )
 {
     struct stat		st;
     int			c, err = 0;
+    int			set = 0;
     int			( *handler_f )( char * );
     char		*path = NULL;
     char		*p;
     extern int		optind;
 
-    while (( c = getopt( ac, av, "d:l:hVv" )) != -1 ) {
+    while (( c = getopt( ac, av, "d:l:hsVv" )) != -1 ) {
 	switch ( c ) {
 	case 'd':	/* show default handler for UTI */
 	    return( uti_handler_show( optarg, 0 ));
@@ -47,6 +48,10 @@ main( int ac, char *av[] )
 	case 'l':	/* list all handlers for UTI */
 	    return( uti_handler_show( optarg, 1 ));
 
+	case 's':	/* set handler */
+	    set = 1;
+	    break;
+
 	case 'V':	/* version */
 	    printf( "%s\n", duti_version );
 	    exit( 0 );
@@ -57,13 +62,46 @@ main( int ac, char *av[] )
 	}
     }
 
-    if (( ac - optind ) == 1 ) {
+    nroles = sizeof( rtm ) / sizeof( rtm[ 0 ] );
+
+    switch (( ac - optind )) {
+    case 0 :	/* read from stdin */
+	if ( set ) {
+	    err++;
+	}
+	break;
+
+    case 1 :	/* read from file or directory */
+	if ( set ) {
+	    err++;
+	}
 	path = av[ optind ];
+	break;
+
+    case 2 :	/* set URI handler */
+	if ( set ) {
+	    return( duti_handler_set( av[ optind ],
+		    av[ optind + 1 ], NULL ));
+	}
+	/* this fallthrough works because set == 0 */
+	
+    case 3 :	/* set UTI handler */
+	if ( set ) {
+	    return( duti_handler_set( av[ optind ],
+		    av[ optind + 1 ], av[ optind + 2 ] ));
+	}
+	/* fallthrough to error */
+    
+    default :	/* error */
+	err++;
+	break;
     }
 
     if ( err ) {
 	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -l uti ] "
 			 "[ settings_path ]\n", av[ 0 ] );
+	fprintf( stderr, "usage: %s -s bundle_id { uti | url_scheme } "
+			 "[ role ]\n", av[ 0 ] );
 	exit( 1 );
     }
 
@@ -94,8 +132,6 @@ main( int ac, char *av[] )
 	    exit( 1 );
 	}
     }
-
-    nroles = sizeof( rtm ) / sizeof( rtm[ 0 ] );
 
     return( handler_f( path ));
 }
