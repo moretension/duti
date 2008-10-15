@@ -113,6 +113,34 @@ cf2c( CFStringRef cfstr, char *cstr, int len )
 }
 
 /*
+ * cfurl2path: convert a CFURLRef to a POSIX C string path
+ *
+ * parameters:
+ *	cfurl: CFURLRef to convert to C string path
+ *	cstr: char buffer that will contain result of conversion
+ *	len: size of cstr buffer
+ *
+ * return value:
+ *	-1: conversion failed
+ *	 0: success
+ */
+    int
+cfurl2path( CFURLRef cfurl, char *cstr, int len )
+{
+    if ( cfurl == NULL ) {
+	fprintf( stderr, "Cannot convert a null CFURLRef\n" );
+	return( -1 );
+    }
+
+    if ( !CFURLGetFileSystemRepresentation( cfurl, false, (UInt8 *)cstr, len)) {
+	fprintf( stderr, "Failed to convert CFURLRef to C path\n" );
+	return( -1 );
+    }
+
+    return( 0 );
+}
+
+/*
  * lladd: insert a path into a sorted linked list.
  *
  * parameters:

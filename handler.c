@@ -490,3 +490,97 @@ duti_set_cleanup:
 
     return( rc );
 }
+
+/*
+ * print default app info for a given extension. based on
+ * public domain source posted on the heliumfoot.com blog
+ * by Keith Alperin.
+ *
+ * http://www.heliumfoot.com/blog/77
+ */
+    int
+duti_default_app_for_extension( char *ext )
+{
+    CFDictionaryRef	cf_info_dict = NULL;
+    CFStringRef		cf_ext = NULL;
+    CFStringRef		cf_app_bundle_id = NULL;
+    CFStringRef		cf_app_name = NULL;
+    CFURLRef		cf_app_url = NULL;
+    OSStatus		err;
+    char		*rext;
+    char		tmp[ MAXPATHLEN ];
+    int			rc = 2;
+
+    if (( rext = strrchr( ext, '.' )) == NULL ) {
+	rext = ext;
+    } else {
+	rext++;
+	if ( *rext == '\0' ) {
+	    fprintf( stderr, "no extension provided\n" );
+	    return( rc );
+	}
+    }
+    if ( c2cf( rext, &cf_ext ) != 0 ) {
+	return( rc );
+    }
+
+    err = LSGetApplicationForInfo( kLSUnknownType, kLSUnknownCreator, cf_ext,
+					kLSRolesAll, NULL, &cf_app_url );
+    if ( err != noErr ) {
+	fprintf( stderr, "Failed to get default application for "
+			 "extension \'%s\'\n", rext );
+	goto duti_extension_cleanup;
+    }
+
+    err = LSCopyDisplayNameForURL( cf_app_url, &cf_app_name );
+    if ( err != noErr ) {
+	fprintf( stderr, "Failed to get display name\n" );
+	goto duti_extension_cleanup;
+    }
+    if ( cf2c( cf_app_name, tmp, sizeof( tmp )) != 0 ) {
+	goto duti_extension_cleanup;
+    }
+    printf( "%s\n", tmp );
+
+    if ( cfurl2path( cf_app_url, tmp, sizeof( tmp )) != 0 ) {
+	goto duti_extension_cleanup;
+    }
+    printf( "%s\n", tmp );
+
+    cf_info_dict = CFBundleCopyInfoDictionaryInDirectory( cf_app_url );
+    if ( cf_info_dict == NULL ) {
+	fprintf( stderr, "Failed to copy info dictionary from %s\n", tmp );
+	goto duti_extension_cleanup;
+    }
+
+    cf_app_bundle_id = CFDictionaryGetValue( cf_info_dict,
+					     kCFBundleIdentifierKey );
+    if ( cf_app_bundle_id == NULL ) {
+	fprintf( stderr, "Failed to get bundle identifier for %s\n", tmp );
+	goto duti_extension_cleanup;
+    }
+
+    if ( cf2c( cf_app_bundle_id, tmp, sizeof( tmp )) != 0 ) { 
+	goto duti_extension_cleanup;
+    }
+    printf( "%s\n", tmp );
+
+    /* success */
+    rc = 0;
+
+duti_extension_cleanup:
+    if ( cf_ext != NULL ) {
+	CFRelease( cf_ext );
+    }
+    if ( cf_app_url != NULL ) {
+	CFRelease( cf_app_url );
+    }
+    if ( cf_info_dict != NULL ) {
+	CFRelease( cf_info_dict );
+    }
+    if ( cf_app_name != NULL ) {
+	CFRelease( cf_app_name );
+    }
+
+    return( rc );
+}

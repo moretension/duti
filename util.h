@@ -6,4 +6,5 @@ struct ll {
 int		parseline( char *, char *** );
 int		c2cf( char *, CFStringRef * );
 int		cf2c( CFStringRef, char *, int );
+int		cfurl2path( CFURLRef, char *, int );
 void		lladd( char *, struct ll ** );
