@@ -25,6 +25,10 @@ processes a plist. If the path given to duti on the command-line is a
 directory, duti will apply settings from all valid settings files in that
 directory, excluding files whose names begin with '.'.
 
+duti can also print out the default application information for a given
+extension (-x). This feature is based on public domain source code posted
+by Keith Alperin on the heliumfoot.com blog.
+
 See the man page for additional usage details.
 
 
@@ -40,6 +44,12 @@ See the man page for additional usage details.
 
     Set Finder as the default handler for ftp:// URLs:
 	% duti -s com.apple.Finder ftp
+
+    Get default application information for .jpg files:
+	% duti -x jpg
+	Preview
+	/Applications/Preview.app
+	com.apple.Preview
 
 
 * Support

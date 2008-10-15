@@ -22,6 +22,9 @@
 .I role
 ]
 .sp
+.B duti
+.BI \-x\  ext
+.sp
 .SH DESCRIPTION
 .B duti
 sets applications as default handlers for Apple's Uniform Type Identifiers
@@ -47,7 +50,15 @@ means that
 .B duti
 will set the handler for a URL scheme. Three arguments means
 .B duti
-will set the handler for a UTI. See
+will set the handler for a UTI.
+.sp
+.B duti
+.BI \-x
+retrieves and prints out information describing the default application
+for files with the extension
+.IR ext .
+.sp
+See
 .B EXAMPLES
 below for usage cases.
 .sp
@@ -190,6 +201,21 @@ with
 	duti -s com.apple.Finder ftp
 .sp
 
+Retrieving default application information for an extension:
+.sp
+.br
+	# default application information for .html files
+.br
+	% duti -x html
+.br
+	Safari
+.br
+	/Applications/Safari.app
+.br
+	com.apple.Safari
+.br
+.sp
+
 The following examples can be used by passing them to
 .B duti
 on stdin or as lines in a .duti file.
@@ -235,6 +261,10 @@ print version number and exit.
 .TP 19
 .B \-v
 verbose output.
+.TP 19
+.BI \-x\  ext
+print information describing the default application for extension
+.IR ext .
 .sp
 .SH EXIT STATUS
 .TP 5
@@ -256,10 +286,16 @@ in the Apple Developer Connection Library at:
 	http://developer.apple.com/referencelibrary/
 .br
 .sp
+More technical information, including APIs, can be found at:
+.sp
+.br
+	http://developer.apple.com/macosx/uniformtypeidentifiers.html
+.br
+.sp
 To get a list of UTIs on your system, you can use the following command line:
 .sp
 .br
-	`locate lsregister` -dump | grep '[[:space:]]uti:' \\
+	\`locate lsregister\` -dump | grep '[[:space:]]uti:' \\
 .br
 		| awk '{ print $2 }' | sort | uniq
 .sp
