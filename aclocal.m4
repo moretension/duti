@@ -14,6 +14,9 @@ AC_DEFUN([DUTI_CHECK_SDK],
 	    sdk="/Developer/SDKs/MacOSX10.5.sdk"
 	    ;;
 
+	darwin10*)
+	    sdk="/Developer/SDKs/MacOS10.6.sdk"
+	    ;;
 	*)
 	    AC_MSG_ERROR([${host_os} is not a supported system])
     esac
@@ -41,6 +44,10 @@ AC_DEFUN([DUTI_CHECK_DEPLOYMENT_TARGET],
 
 	darwin9*)
 	    dep_target="10.5"
+	    ;;
+
+	darwin10*)
+	    dep_target="10.6"
 	    ;;
     esac
 
