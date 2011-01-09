@@ -90,8 +90,6 @@ fsethandler( char *spath )
     int		i = 0, linenum = 0, rc = 0;
     int		len, htype;
 
-    CFStringRef	bid = NULL, cftype = NULL;
-
     if ( spath != NULL ) {
 	if (( f = fopen( spath, "r" )) == NULL ) {
 	    fprintf( stderr, "fopen %s: %s\n", spath, strerror( errno ));
@@ -122,18 +120,6 @@ fsethandler( char *spath )
 	    handler = lineav[ 0 ];
 	    type = lineav[ 1 ];
 	    role = lineav[ 2 ];
-
-	    for ( i = 0; i < nroles; i++ ) {
-		if ( strcasecmp( role, rtm[ i ].r_role ) == 0 ) {
-		    break;
-		}
-	    }
-	    if ( i >= nroles ) {
-		fprintf( stderr, "line %d: role \"%s\" unrecognized\n",
-			    linenum, role );
-		rc = 1;
-		continue;
-	    }
 	    break;
 
 	case DUTI_TYPE_URL_HANDLER:
@@ -147,32 +133,10 @@ fsethandler( char *spath )
 	    continue;
 	}
 
-	/* must have a CF representation of the role handler and type */
-	if ( c2cf( handler, &bid ) != 0 ) {
-	    rc = 1;
-	    goto cleanup;
-	}
-	if ( c2cf( type, &cftype ) != 0 ) {
-	    rc = 1;
-	    goto cleanup;
-	}
-
 	if ( htype == DUTI_TYPE_UTI_HANDLER ) {
-	    if ( set_uti_handler( bid, cftype, rtm[ i ].r_mask ) != 0 ) {
-		rc = 1;
-	    }
+	    duti_handler_set( handler, type, role );
 	} else if ( htype == DUTI_TYPE_URL_HANDLER ) {
-	    if ( set_url_handler( bid, cftype ) != 0 ) {
-		rc = 1;
-	    }
-	}
-
-cleanup:
-	if ( bid != NULL ) {
-	    CFRelease( bid );
-	}
-	if ( cftype != NULL ) {
-	    CFRelease( cftype );
+	    duti_handler_set( handler, type, NULL );
 	}
     }
     if ( ferror( f )) {
@@ -443,6 +407,7 @@ duti_handler_set( char *bid, char *type, char *role )
 {
     CFStringRef		cf_bid = NULL;
     CFStringRef		cf_type = NULL;
+    CFStringRef		tagClass = NULL, preferredUTI = NULL;
     int			rc = 0;
     int			i = 0;
 
@@ -458,13 +423,59 @@ duti_handler_set( char *bid, char *type, char *role )
 	}
     }
 
+    if ( *type == '.' ) {
+	type++;
+	if ( *type == '\0' ) {
+	    fprintf( stderr, "duti_handler_set: invalid empty type" );
+	    rc = 2;
+	    goto duti_set_cleanup;
+	}
+	tagClass = kUTTagClassFilenameExtension;
+    } else {
+	if ( strchr( type, '/' ) != NULL ) {
+	    tagClass = kUTTagClassMIMEType;
+	} else if ( strchr( type, '.' ) == NULL ) {
+	    tagClass = kUTTagClassFilenameExtension;
+	}
+    }
+    if ( tagClass != NULL ) {
+	/*
+	 * if there's no UTI defined for the extension, the system creates a
+	 * dynamic local UTI for it, with a "dyn." prefix and an encoded value.
+	 */
+	if ( c2cf( type, &cf_type ) != 0 ) {
+	    rc = 2;
+	    goto duti_set_cleanup;
+	}
+
+	preferredUTI = UTTypeCreatePreferredIdentifierForTag(
+			    tagClass, cf_type, kUTTypeContent );
+	CFRelease( cf_type );
+	cf_type = NULL;
+
+	if ( preferredUTI == NULL ) {
+	    fprintf( stderr, "failed to create preferred "
+			     "identifier for type %s", type );
+	    rc = 2;
+	    goto duti_set_cleanup;
+	}
+    }
     if ( c2cf( bid, &cf_bid ) != 0 ) {
 	rc = 2;
 	goto duti_set_cleanup;
     }
-    if ( c2cf( type, &cf_type ) != 0 ) {
-	rc = 2;
-	goto duti_set_cleanup;
+    if ( preferredUTI != NULL ) {
+	if (( cf_type = CFStringCreateCopy( kCFAllocatorDefault,
+			    preferredUTI )) == NULL ) {
+	    fprintf( stderr, "failed to copy preferred UTI" );
+	    rc = 2;
+	    goto duti_set_cleanup;
+	}
+    } else {
+	if ( c2cf( type, &cf_type ) != 0 ) {
+	    rc = 1;
+	    goto duti_set_cleanup;
+	}
     }
 
     if ( role != NULL ) {
@@ -486,6 +497,9 @@ duti_set_cleanup:
     }
     if ( cf_type != NULL ) {
 	CFRelease( cf_type );
+    }
+    if ( preferredUTI != NULL ) {
+	CFRelease( preferredUTI );
     }
 
     return( rc );
