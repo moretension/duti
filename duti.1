@@ -1,7 +1,7 @@
 .TH duti "1" "_DUTI_BUILD_DATE" "University of Michigan" "User Commands"
 .SH NAME
 .B duti
-\- set default UTI handlers
+\- set default document and URL handlers
 .SH SYNOPSIS
 .B duti
 [
@@ -17,18 +17,26 @@
 .B duti
 .BI \-s
 .I bundle_id
-.I uti_or_url_scheme
+{
+.I uti
+|
+.I url_scheme
+|
+.I extension
+|
+.I MIME_type
+}
 [
 .I role
 ]
 .sp
 .B duti
-.BI \-x\  ext
+.BI \-x\  extension
 .sp
 .SH DESCRIPTION
 .B duti
-sets applications as default handlers for Apple's Uniform Type Identifiers
-and for URL schemes.
+sets applications as default handlers for Apple's Uniform Type Identifiers,
+for URL schemes, filename extensions, and MIME types.
 If 
 .I settings_path
 is not given on the command line,
@@ -39,6 +47,7 @@ is a directory,
 .B duti
 applies settings from the files in
 .IR settings_path .
+.sp
 The
 .BI \-s
 flag tells
@@ -50,13 +59,24 @@ means that
 .B duti
 will set the handler for a URL scheme. Three arguments means
 .B duti
-will set the handler for a UTI.
+will set the handler for a UTI, an extension or a MIME type, depending on
+the formatting of the second argument.
+.B duti
+treats an argument beginning with a dot as an extension. If the argument
+contains no dots,
+.B duti
+also considers the argument a filename extension, unless it contains a slash,
+in which case
+.B duti
+treats the argument as a MIME type. In all other cases,
+.B duti
+treats the second argument as a UTI.
 .sp
 .B duti
 .BI \-x
 retrieves and prints out information describing the default application
 for files with the extension
-.IR ext .
+.IR extension .
 .sp
 See
 .B EXAMPLES
@@ -164,6 +184,8 @@ would look like this:
 .br
 	</dict>
 .br
+	</plist>
+.br
 .sp
 .SH ROLES
 Valid roles are defined as follows:
@@ -224,6 +246,12 @@ Set TextEdit as the default viewer for Microsoft Word documents:
 .sp
 .br
 	com.apple.TextEdit    com.microsoft.word.doc    viewer
+.br
+.sp
+Set VLC as the default viewer for files with .m4v extensions:
+.sp
+.br
+	org.videolan.vlc   m4v	viewer
 .br
 .sp
 Set iHook as the default executor of shell scripts:
