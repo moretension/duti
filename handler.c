@@ -162,6 +162,7 @@ psethandler( char *spath )
 
     int			i, rc = 0;
     int			htype = DUTI_TYPE_UTI_HANDLER;
+    char		handler[ MAXPATHLEN ], type[ MAXPATHLEN ];
     char		crole[ 255 ];
 
     if ( !spath ) {
@@ -215,28 +216,31 @@ psethandler( char *spath )
 	}
 
 	if ( htype == DUTI_TYPE_UTI_HANDLER ) {
-	    /* get C string form of role to look up LSRoleMask */
+	    if ( cf2c( bid, handler, sizeof( handler )) != 0 ) {
+		rc = 1;
+		continue;
+	    }
+	    if ( cf2c( uti, type, sizeof( type )) != 0 ) {
+		rc = 1;
+		continue;
+	    }
 	    if ( cf2c( role, crole, sizeof( crole )) != 0 ) {
 		rc = 1;
 		continue;
 	    }
-	    for ( i = 0; i < nroles; i++ ) {
-		if ( strcasecmp( crole, rtm[ i ].r_role ) == 0 ) {
-		    break;
-		}
-	    }
-	    if ( i >= nroles ) {
-		fprintf( stderr, "entry %d: role \"%s\" unrecognized\n",
-			    ( int )index, crole );
-		rc = 1;
-		continue;
-	    }	
-
-	    if ( set_uti_handler( bid, uti, rtm[ i ].r_mask ) != 0 ) {
+	    if ( duti_handler_set( handler, type, crole ) != 0 ) {
 		rc = 1;
 	    }
 	} else if ( htype == DUTI_TYPE_URL_HANDLER ) {
-	    if ( set_url_handler( bid, url_scheme ) != 0 ) {
+	    if ( cf2c( bid, handler, sizeof( handler )) != 0 ) {
+		rc = 1;
+		continue;
+	    }
+	    if ( cf2c( url_scheme, type, sizeof( type )) != 0 ) {
+		rc = 1;
+		continue;
+	    }
+	    if ( duti_handler_set( handler, type, NULL ) != 0 ) {
 		rc = 1;
 	    }
 	}
@@ -423,41 +427,43 @@ duti_handler_set( char *bid, char *type, char *role )
 	}
     }
 
-    if ( *type == '.' ) {
-	type++;
-	if ( *type == '\0' ) {
-	    fprintf( stderr, "duti_handler_set: invalid empty type" );
-	    rc = 2;
-	    goto duti_set_cleanup;
-	}
-	tagClass = kUTTagClassFilenameExtension;
-    } else {
-	if ( strchr( type, '/' ) != NULL ) {
-	    tagClass = kUTTagClassMIMEType;
-	} else if ( strchr( type, '.' ) == NULL ) {
+    if ( role != NULL ) {
+	if ( *type == '.' ) {
+	    type++;
+	    if ( *type == '\0' ) {
+		fprintf( stderr, "duti_handler_set: invalid empty type" );
+		rc = 2;
+		goto duti_set_cleanup;
+	    }
 	    tagClass = kUTTagClassFilenameExtension;
+	} else {
+	    if ( strchr( type, '/' ) != NULL ) {
+		tagClass = kUTTagClassMIMEType;
+	    } else if ( strchr( type, '.' ) == NULL ) {
+		tagClass = kUTTagClassFilenameExtension;
+	    }
 	}
-    }
-    if ( tagClass != NULL ) {
-	/*
-	 * if there's no UTI defined for the extension, the system creates a
-	 * dynamic local UTI for it, with a "dyn." prefix and an encoded value.
-	 */
-	if ( c2cf( type, &cf_type ) != 0 ) {
-	    rc = 2;
-	    goto duti_set_cleanup;
-	}
+	if ( tagClass != NULL ) {
+	    /*
+	     * if no UTI defined for the extension, the system creates a
+	     * dynamic local UTI with a "dyn." prefix & an encoded value.
+	     */
+	    if ( c2cf( type, &cf_type ) != 0 ) {
+		rc = 2;
+		goto duti_set_cleanup;
+	    }
 
-	preferredUTI = UTTypeCreatePreferredIdentifierForTag(
-			    tagClass, cf_type, kUTTypeContent );
-	CFRelease( cf_type );
-	cf_type = NULL;
+	    preferredUTI = UTTypeCreatePreferredIdentifierForTag(
+				tagClass, cf_type, kUTTypeContent );
+	    CFRelease( cf_type );
+	    cf_type = NULL;
 
-	if ( preferredUTI == NULL ) {
-	    fprintf( stderr, "failed to create preferred "
-			     "identifier for type %s", type );
-	    rc = 2;
-	    goto duti_set_cleanup;
+	    if ( preferredUTI == NULL ) {
+		fprintf( stderr, "failed to create preferred "
+				 "identifier for type %s", type );
+		rc = 2;
+		goto duti_set_cleanup;
+	    }
 	}
     }
     if ( c2cf( bid, &cf_bid ) != 0 ) {
