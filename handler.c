@@ -87,7 +87,7 @@ fsethandler( char *spath )
     char	line[ MAXPATHLEN * 2 ];
     char	*handler, *type, *role;
     char	**lineav = NULL;
-    int		i = 0, linenum = 0, rc = 0;
+    int		linenum = 0, rc = 0;
     int		len, htype;
 
     if ( spath != NULL ) {
@@ -160,7 +160,7 @@ psethandler( char *spath )
     CFStringRef		bid, uti, role, url_scheme;
     CFIndex		count, index;
 
-    int			i, rc = 0;
+    int			rc = 0;
     int			htype = DUTI_TYPE_UTI_HANDLER;
     char		handler[ MAXPATHLEN ], type[ MAXPATHLEN ];
     char		crole[ 255 ];
