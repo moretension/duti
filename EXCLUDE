@@ -1,4 +1,6 @@
 .cvsignore
+.gitignore
+.git
 CVS
 EXCLUDE
 Makefile
