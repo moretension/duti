@@ -113,7 +113,7 @@ package : all
 	    -f ${PKGDIR} -r ${PKGINFODIR} \
 	    -i ${PKGINFODIR}/Info.plist \
 	    -d ${PKGINFODIR}/Description.plist
-	tar cvfz ../${PKGNAME}.pkg.tar.gz ../${PKGNAME}.pkg
+	(cd .. && tar cvfz ${PKGNAME}.pkg.tar.gz ${PKGNAME}.pkg)
 	sudo rm -rf tmp
 	for c in sha1 rmd160 md5; do \
 	    (cd ..; openssl $$c ${PKGNAME}.pkg.tar.gz); \
