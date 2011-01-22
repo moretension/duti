@@ -51,23 +51,23 @@ duti : ${DUTI_OBJ}
 	${CC} ${FRAMEWORKS} ${CFLAGS} -o duti ${DUTI_OBJ} ${LDFLAGS}
 
 VERSION=$(shell date +%Y%m%d)
-DISTDIR=../duti-${VERSION}
+DISTDIR=duti-${VERSION}
 
 dist : distclean
-	mkdir ${DISTDIR}
-	tar -h -c -f - -X EXCLUDE . | tar xpf - -C ${DISTDIR}
-	echo ${VERSION} > ${DISTDIR}/VERSION
+	mkdir ../${DISTDIR}
+	tar -h -c -f - -X EXCLUDE . | tar xpf - -C ../${DISTDIR}
+	echo ${VERSION} > ../${DISTDIR}/VERSION
 	sed -e "s@INTERNAL@${VERSION}@" \
-		< configure.ac > ${DISTDIR}/configure.ac
-	(cd "${DISTDIR}"; autoconf; rm -rf autom4te.cache)
+		< configure.ac > ../${DISTDIR}/configure.ac
+	(cd "../${DISTDIR}"; autoconf; rm -rf autom4te.cache)
 	for i in ${MANTARGETS}; do \
 	    sed -e 's@_DUTI_BUILD_DATE@${DUTI_BUILD_DATE}@g' \
-		    ${DISTDIR}/$$i > ${DISTDIR}/$$i.tmp; \
-	    mv -f ${DISTDIR}/$$i.tmp ${DISTDIR}/$$i; \
+		    ../${DISTDIR}/$$i > ../${DISTDIR}/$$i.tmp; \
+	    mv -f ../${DISTDIR}/$$i.tmp ../${DISTDIR}/$$i; \
 	done
-	tar cvfz ${DISTDIR}.tar.gz ${DISTDIR}
+	(cd .. && tar cvfz ${DISTDIR}.tar.gz ${DISTDIR})
 	for c in sha1 rmd160 md5; do \
-	    openssl $$c ${DISTDIR}.tar.gz; \
+	    (cd .. && openssl $$c ${DISTDIR}.tar.gz); \
 	done
 
 install : all
