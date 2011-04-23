@@ -352,9 +352,12 @@ uti_handler_show( char *uti, int showall )
     if ( showall ) {
 	if (( cfhandlers = LSCopyAllRoleHandlersForContentType(
 				cfuti, kLSRolesAll )) == NULL ) {
-	    fprintf( stderr, "%s: no handlers\n", uti );
-	    rc = 1;
-	    goto uti_show_done;
+	    if (( cfhandlers = LSCopyAllHandlersForURLScheme(
+					cfuti )) == NULL ) {
+		fprintf( stderr, "%s: no handlers\n", uti );
+		rc = 1;
+		goto uti_show_done;
+	    }
 	}
 
 	if ( verbose ) {
@@ -376,9 +379,12 @@ uti_handler_show( char *uti, int showall )
     } else {
 	if (( cfhandler = LSCopyDefaultRoleHandlerForContentType(
 				cfuti, kLSRolesAll )) == NULL ) {
-	    fprintf( stderr, "%s: no default handler\n", uti );
-	    rc = 1;
-	    goto uti_show_done;
+	    if (( cfhandler = LSCopyDefaultHandlerForURLScheme(
+					cfuti )) == NULL ) {
+		fprintf( stderr, "%s: no default handler\n", uti );
+		rc = 1;
+		goto uti_show_done;
+	    }
 	}
 
 	if ( cf2c( cfhandler, dh, MAXPATHLEN ) != 0 ) {
