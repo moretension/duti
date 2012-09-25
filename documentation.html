@@ -1,0 +1,97 @@
+<html>
+<head>
+<title>duti documentation</title>
+
+<link type="text/css" rel="stylesheet" href="duti.css">
+</head>
+
+<body>
+
+<h1 class="duti-banner">duti</h1>
+<ul class="nav">
+    <li><a href="index.html">duti home</a></li>
+    <li><a href="http://sourceforge.net/projects/duti/files/">download</a></li>
+    <li><a href="http://fitterhappier.github.com/duti">github</a></li>
+    <li><a href="documentation.html">documentation</a></li>
+    <li><a href="license.html">license</a></li>
+</ul>
+
+<h2 class="duti-header">About duti</h2>
+<p class="duti-news"><b>duti</b> is a command-line tool written by Andrew Mortensen, designed to set default applications for document types and URL schemes on Mac OS X.</p>
+
+<p class="duti-news">Document types on Mac OS X are defined by what Apple calls <B>Uniform Type Identifiers</B>, or UTIs. HTML files, for example, have a UTI of public.html. Microsoft Word documents are described by the UTI com.microsoft.word.doc. Apple provides many UTIs with Mac OS X, but developers are free to define their own, as long as the UTI is unique to that document type.
+<p class="duti-news"><b>duti</b>'s name means "default for UTI."</p>
+<br>
+
+<h2 class="duti-header">Usage</h2>
+<p class="duti-news"><b>duti</b> can read and apply settings from a specially formatted text file, from an XML property list, or from standard input. In typical use, duti would read and apply settings from a file a line at a time.</p>
+<p class="duti-news">To set the default application for a document type, <b>duti</b> needs three things:</p>
+
+<ul class="duti-news">
+    <li>An application bundle identifier (e.g., com.apple.Safari)</li>
+    <li>The document type's UTI (e.g., public.html), extension or MIME type</li>
+    <li>The role the application will play for the UTI (e.g., editor)</li>
+</ul>
+
+<p class="duti-news">To set the default application for a URL scheme, <b>duti</b> needs just two things:</p>
+
+<ul class="duti-news">
+    <li>An application bundle identifier (e.g., org.mozilla.Firefox)</li>
+    <li>The URL scheme (e.g., feed, as in "feed://..." RSS URLs)</li>
+</ul>
+
+<p class="duti-news">A simple settings file, then, would look like this:</p>
+<pre class="duti-fw"># Set Safari as the default handler for HTML files,
+# set TextEdit as the default handler for files with .patch extensions,
+# and set Firefox as the default handler for feed:// URLs.
+#
+# blank lines and lines beginning with a '#' are ignored
+#
+# bundle id		UTI/ext/MIME type	role
+
+com.apple.Safari	public.html		all
+com.apple.TextEdit	.patch			editor
+
+# bundle id		URL scheme
+
+org.mozilla.Firefox	feed
+</pre>
+
+<p class="duti-news">Applying the settings in the file might look something like this:</p>
+<pre class="duti-fw">
+<b>localhost%</b> cat /Library/Settings/html_handler.duti
+# Set Safari as the default handler in all roles for HTML files
+#
+# blank lines and lines beginning with a '#' are ignored
+#
+# bundle id		UTI		role
+
+com.apple.Safari	public.html	all
+<b>localhost%</b> duti /Library/Settings/html_handler.duti
+<b>localhost%</b>
+</pre>
+
+<p class="duti-news"><b>duti</b> can also apply settings from an XML property list (plist). See the manual page section below for details regarding the use of plists with duti.
+
+<p class="duti-news">If the path given to duti is a directory, duti will apply settings from all visible files found in the directory, in lexical order. This allows the administrator the option of overriding settings depending on the purpose of the system.</p>
+
+<p class="duti-news">In this example, <b>duti</b> applies settings from a directory. The -v flag makes duti run verbosely, so you can see what settings it applies.</p>
+<pre class="duti-fw">
+<b>localhost%</b> ls /Library/Settings
+MSOffice.plist		html_handler.duti	realplayer.duti
+<b>localhost%</b> duti -v /Library/Settings
+Applying settings from from /Library/Settings/MSOffice.plist
+setting com.apple.TextEdit as handler for com.microsoft.word.doc
+Applying settings from /Library/Settings/html_handler.duti
+setting com.apple.Safari as handler for public.html
+Applying settings from /Library/Settings/realplayer.duti
+setting com.real.RealPlayer as handler for com.real.realaudio
+setting com.real.RealPlayer as handler for com.real.realmedia
+<b>localhost%</b>
+</pre>
+<br>
+
+<h2 class="duti-header">Manual</h2>
+<p class="duti-news"><a href="duti.1.html">duti.1</a> -- manual page for duti</p>
+</body
+</html>

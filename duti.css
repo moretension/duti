@@ -1,0 +1,70 @@
+body {
+        background-color: #E0E0E0;
+	padding-left: 13em;
+	padding-right: 13em;
+}
+
+ul.nav {
+	background-color: #A0A0A0;
+	padding: 0.5em;
+	border: none;
+	list-style-type: none;
+	position: fixed;
+	top: 0em;
+	left: 1em;
+	width: 8em;
+}
+
+ul.duti-news {
+	font-family: times;
+	margin-left: 10%;
+}
+
+h1.duti-banner {
+	font-family: courier;
+        font-size: 200%;
+        letter-spacing: 20px;
+        text-align: center;
+}
+
+h2.duti-header {
+	font-family: courier;
+	font-size: 100%;
+	letter-spacing: 5px;
+	text-align: left;
+}
+
+h3.duti-date {
+	font-family: courier;
+	font-size: 75%;
+	letter-spacing: 5px;
+	text-align: left;
+}
+
+ul.nav li {
+	background-color: #F0F0F0;
+	margin: 0.5em 0;
+	padding: 0.3em;
+}
+
+p.duti-para {
+	font-family: times;
+}
+
+p.duti-news {
+	font-family: times;
+	margin-left: 10%;
+}
+
+p.duti-fw {
+	font-family: courier;
+	font-size: 75%;
+	margin-left: 10%;
+}
+
+pre.duti-fw {
+	background-color: #C0C0C0;
+	font-family: courier;
+	font-size: 75%;
+	margin-left: 10%;
+}

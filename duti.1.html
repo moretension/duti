@@ -1,0 +1,228 @@
+<HTML>
+<head>
+<title>duti man page</title>
+<link type="text/css" rel="stylesheet" href="duti.css">
+</head>
+<BODY>
+
+<h1 class="duti-banner">duti</h1>
+<ul class="nav">
+    <li><a href="index.html">duti home</a></li>
+    <li><a href="http://sourceforge.net/projects/duti/files/">download</a></li>
+    <li><a href="http://fitterhappier.github.com/duti">github</a></li>
+    <li><a href="documentation.html">documentation</a></li>
+    <li><a href="license.html">license</a></li>
+</ul>
+
+<PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+
+</PRE>
+
+
+<H2 class="duti-header">SYNOPSIS</H2><PRE>
+       <B>duti</B> [ <B>-hVv</B> ] [ <I>settings</I><B>_</B><I>path</I> ]
+
+
+
+</PRE>
+<H2 class="duti-header">DESCRIPTION</H2><PRE>
+       <B>duti</B>  sets  applications  as  default handlers for Apple's Uniform Type
+       Identifiers.  If <I>settings</I><B>_</B><I>path</I> is not given on the command  line,  <B>duti</B>
+       reads  settings lines from stdin. If <I>settings</I><B>_</B><I>path</I> is a directory, <B>duti</B>
+       applies settings from the files in <I>settings</I><B>_</B><I>path</I>.
+
+       The <B>-s</B> flag tells <B>duti</B> to set a handler based  on  arguments  from  the
+       command  line.  Two arguments following <B>-s</B> means that <B>duti</B> will set the
+       handler for a URL scheme. Three arguments means <B>duti</B> will set the  han-
+       dler  for  a UTI, an extension or a MIME type, depending on the format-
+       ting of the second argument.  <B>duti</B> treats an argument beginning with  a
+       dot  as  an extension. If the argument contains no dots, <B>duti</B> also con-
+       siders the argument a filename extension, unless it contains  a  slash,
+       in  which  case  <B>duti</B>  treats the argument as a MIME type. In all other
+       cases, <B>duti</B> treats the second argument as a UTI.
+
+       <B>duti</B> <B>-x</B> retrieves and prints out  information  describing  the  default
+       application for files with the extension extension.
+
+       See <B>EXAMPLES</B> below for usage cases.
+
+
+</PRE>
+<H2 class="duti-header">SETTINGS FILE</H2><PRE>
+       A settings file is made up of lines with the following format:
+
+            app_id    UTI    role
+
+       The <I>app</I><B>_</B><I>id</I> is a bundle ID representing the application that will act as
+       the handler for documents associated with <I>UTI</I>.  For example:
+
+            com.apple.Safari    public.html    all
+
+       would cause <B>duti</B> to set Safari as the default handler in all situations
+       for HTML documents.  A settings file can also contain lines  with  this
+       format:
+
+            app_id    url_scheme
+
+       In  this  case, <I>app</I><B>_</B><I>id</I> is again a bundle ID, this time for the applica-
+       tion that will act as the default handler for <I>url</I><B>_</B><I>scheme</I>. For example:
+
+            org.mozilla.Firefox     ftp
+
+       would cause <B>duti</B> to set Firefox as the handler for "ftp://" URLs.
+
+
+
+</PRE>
+<H2 class="duti-header">SETTINGS PLIST</H2><PRE>
+       If the extension of the file given to <B>duti</B> is <I>.plist</I>, <B>duti</B>  treats  the
+       file  as  an  XML property list (plist).  The plist must contain a key-
+       value pair, in which the key is "DUTISettings"  and  the  value  is  an
+       array of dictionaries. Each dictionary in the array contains three key-
+       value pairs representing the application's bundle ID, the UTI  and  the
+       role,  respectively.  A  simple  plist  designed  to  set Safari as the
+       default handler of HTML files, and Firefox as the default handler for
+       "ftp://" URLs, would look like this:
+
+            &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+            &lt;!DOCTYPE plist  PUBLIC  "-//Apple  Computer//DTD  PLIST  1.0//EN"
+       "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+            &lt;plist version="1.0"&gt;
+            &lt;dict&gt;
+                 &lt;key&gt;DUTISettings&lt;/key&gt;
+                 &lt;array&gt;
+                      &lt;dict&gt;
+                           &lt;key&gt;DUTIBundleIdentifier&lt;/key&gt;
+                           &lt;string&gt;com.apple.Safari&lt;/string&gt;
+                           &lt;key&gt;DUTIUniformTypeIdentifier&lt;/key&gt;
+                           &lt;string&gt;public.html&lt;/string&gt;
+                           &lt;key&gt;DUTIRole&lt;/key&gt;
+                           &lt;string&gt;all&lt;/string&gt;
+                      &lt;/dict&gt;
+                      &lt;dict&gt;
+                           &lt;key&gt;DUTIBundleIdentifier&lt;/key&gt;
+                           &lt;string&gt;org.mozilla.Firefox&lt;/string&gt;
+                           &lt;key&gt;DUTIURLScheme&lt;/key&gt;
+                           &lt;string&gt;ftp&lt;/string&gt;
+                      &lt;/dict&gt;
+                 &lt;/array&gt;
+            &lt;/dict&gt;
+
+
+</PRE>
+<H2 class="duti-header">ROLES</H2><PRE>
+       Valid roles are defined as follows:
+
+       <B>all</B>		  application handles all roles for the given UTI.
+
+       <B>viewer</B>		  application handles reading and displaying documents
+			  with the given UTI.
+
+       <B>editor</B>		  application can manipulate and save the item.
+			  Implies viewer.
+
+       <B>shell</B>		  application can execute the item.
+
+       <B>none</B>               application  cannot  open  the item, but provides an
+                          icon for the given UTI.
+
+
+</PRE>
+<H2 class="duti-header">EXAMPLES</H2><PRE>
+       Running <B>duti</B> with <B>-s</B>:
+
+            # Set Safari as the default handler for HTML documents
+            duti -s com.apple.Safari public.html all
+
+            # Set Finder as the default handler for the ftp:// URL scheme
+            duti -s com.apple.Finder ftp
+
+
+       Retrieving default application information for an extension:
+
+            # default application information for .html files
+            % duti -x html
+            Safari
+            /Applications/Safari.app
+            com.apple.Safari
+
+
+       The following can be used by passing them to <B>duti</B> on stdin or
+       as lines in a .duti file.
+
+	Set TextEdit as the default view for Microsoft Word documents:
+
+            com.apple.TextEdit    com.microsoft.word.doc    viewer
+
+	Set VLC as the default viewer for files with .m4v extensions:
+
+	    org.videolan.vlc	m4v	viewer
+
+       Set iHook as the default executor of shell scripts.
+
+            edu.umich.iHook    public.shell-script    shell
+
+       Set Xcode as the default editor for C source files.
+
+            com.apple.Xcode    public.c-source    editor
+
+
+
+</PRE>
+<H2 class="duti-header">OPTIONS</H2><PRE>
+       <B>-d</B> <I>uti</I>             display the default handler for <I>uti</I> and exit.
+
+       <B>-h</B>                 print usage and exit.
+
+       <B>-l</B> <I>uti</I>             display all handlers for <I>uti</I> and exit.
+
+       <B>-s</B>                 set the handler from data provided  on  the  command
+                          line.
+
+       <B>-V</B>                 print version number and exit.
+
+       <B>-v</B>                 verbose output.
+
+       <B>-x</B> <I>ext</I>             print information describing the default application
+                          for extension <I>ext</I>.
+
+
+</PRE>
+<H2 class="duti-header">EXIT STATUS</H2><PRE>
+       0    All settings applied or displayed successfully.
+
+       1    Settings could not be applied, or the UTI has no handler.
+
+       &gt;1   Error.
+
+
+
+</PRE>
+<H2 class="duti-header">MORE INFO</H2><PRE>
+       Mac  OS X ships with a number of UTIs already defined. Most third-party
+       software is responsible for defining its own UTIs. Apple documents UTIs
+       in the Apple Developer Connection Library at:
+
+            http://developer.apple.com/referencelibrary/
+
+       To get a list of UTIs on your system, you can use the following command
+       line:
+
+            `locate lsregister` -dump | grep '[[:space:]]uti:' \
+                 | awk '{ print $2 }' | sort | uniq
+
+
+
+</PRE>
+<H2 class="duti-header">SEE ALSO</H2><PRE>
+       <B>plutil(1)</B>, <B>plist(5)</B>
+
+</PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
+</BODY>
+</HTML>
