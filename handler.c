@@ -19,6 +19,28 @@ extern struct roles	rtm[];
 int			nroles;
 
     int
+duti_is_conformant_uti( CFStringRef uti )
+{
+    /*
+     * this is gross, but the kUTType CFStringRefs aren't constant, so
+     * there's no convenient way to make a simple CFStringRef array (not
+     * a CFArrayRef) with the base types we're checking. creating a
+     * CFArrayRef with the kUTType CFStringRefs would be worthwhile if
+     * we weren't running as a one-shot utility.
+     */
+
+    if ( UTTypeConformsTo( uti, kUTTypeItem ) ||
+                UTTypeConformsTo( uti, kUTTypeContent ) ||
+                UTTypeConformsTo( uti, kUTTypeMessage ) ||
+                UTTypeConformsTo( uti, kUTTypeContact ) ||
+                UTTypeConformsTo( uti, kUTTypeArchive )) {
+        return( 1 );
+    }
+
+    return( 0 );
+}
+
+    int
 set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 {
     OSStatus		rc;
@@ -34,8 +56,8 @@ set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 	strlcpy( ct, "UTI", sizeof( ct ));
     }
 
-    if ( !UTTypeConformsTo( type, kUTTypeItem ) &&
-		!UTTypeConformsTo( type, kUTTypeContent )) {
+    
+    if ( !duti_is_conformant_uti( type )) {
 	fprintf( stderr, "%s does not conform to any UTI hierarchy\n", ct );
 	return( 1 );
     }
