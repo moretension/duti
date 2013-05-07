@@ -37,10 +37,13 @@ main( int ac, char *av[] )
     extern int		optind;
     extern char		*optarg;
 
-    while (( c = getopt( ac, av, "d:l:hsVvx:" )) != -1 ) {
+    while (( c = getopt( ac, av, "d:e:l:hsu:Vvx:" )) != -1 ) {
 	switch ( c ) {
 	case 'd':	/* show default handler for UTI */
 	    return( uti_handler_show( optarg, 0 ));
+
+	case 'e':	/* UTI declarations for extension */
+		return( duti_utis_for_extension( optarg ));
 
 	case 'h':	/* help */
 	default:
@@ -53,6 +56,9 @@ main( int ac, char *av[] )
 	case 's':	/* set handler */
 	    set = 1;
 	    break;
+
+	case 'u':	/* UTI declarations */
+		return( duti_utis( optarg ));
 
 	case 'V':	/* version */
 	    printf( "%s\n", duti_version );
