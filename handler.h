@@ -19,3 +19,5 @@ int		url_handler_show( char *url_scheme );
 int		duti_handler_set( char *, char *, char * );
 int		duti_default_app_for_extension( char * );
 int		duti_is_conformant_uti( CFStringRef );
+int		duti_utis( char * );
+int		duti_utis_for_extension( char * );
