@@ -18,6 +18,10 @@ extern int		verbose;
 extern struct roles	rtm[];
 int			nroles;
 
+static void dump_cf_array( const void *value, void *context );
+static void dump_cf_dictionary( const void *key, const void *value, void *context );
+
+
     int
 duti_is_conformant_uti( CFStringRef uti )
 {
@@ -631,4 +635,165 @@ duti_extension_cleanup:
     }
 
     return( rc );
+}
+
+int
+duti_utis( char * uti ) {
+	CFStringRef		cf_uti_identifier = NULL;
+	CFStringRef		cf_uti_description = NULL;
+	CFDictionaryRef	cf_uti_declaration = NULL;
+    char		tmp[ MAXPATHLEN ];
+    int			rc = 2;
+
+    if ( uti == NULL ) {
+	fprintf( stderr, "Invalid UTI.\n" );
+	return( rc );
+    }
+
+    if ( c2cf( uti, &cf_uti_identifier ) != 0 ) {
+	return( rc );
+    }
+
+	cf_uti_description = UTTypeCopyDescription(cf_uti_identifier);
+	if ( cf2c( cf_uti_description, tmp, sizeof( tmp )) != 0 ) {
+		goto duti_utis_cleanup;
+	}
+	CFRelease(cf_uti_description); cf_uti_description = NULL;
+	printf( "description: %s\n", tmp );
+	
+	cf_uti_declaration = UTTypeCopyDeclaration(cf_uti_identifier);
+	printf( "declaration: {\n" );
+	CFDictionaryApplyFunction(cf_uti_declaration, dump_cf_dictionary, "\t");
+	CFRelease(cf_uti_declaration); cf_uti_declaration = NULL;
+	printf( "}\n" );
+
+	/* success */
+    rc = 0;
+
+duti_utis_cleanup:
+    if ( cf_uti_identifier ) {
+	CFRelease( cf_uti_identifier );
+    }
+    if ( cf_uti_description != NULL ) {
+	CFRelease( cf_uti_description );
+    }
+    if ( cf_uti_declaration != NULL ) {
+	CFRelease( cf_uti_declaration );
+    }
+
+	return rc;
+}
+
+int
+duti_utis_for_extension(char* ext) {
+    CFStringRef		cf_ext = NULL;
+	CFArrayRef		cf_array = NULL;
+	CFStringRef		cf_uti_description = NULL;
+	CFDictionaryRef	cf_uti_declaration = NULL;
+	CFIndex			index;
+	CFIndex			count;
+    char		*rext;
+    char		tmp[ MAXPATHLEN ];
+    int			rc = 2;
+
+    if (( rext = strrchr( ext, '.' )) == NULL ) {
+	rext = ext;
+    } else {
+	rext++;
+	if ( *rext == '\0' ) {
+	    fprintf( stderr, "no extension provided\n" );
+	    return( rc );
+	}
+    }
+    if ( c2cf( rext, &cf_ext ) != 0 ) {
+	return( rc );
+    }
+
+	cf_array = UTTypeCreateAllIdentifiersForTag(kUTTagClassFilenameExtension, cf_ext, nil);
+	for (index = 0, count = CFArrayGetCount(cf_array); index < count; index++) {
+		CFStringRef cf_uti_identifier = CFArrayGetValueAtIndex(cf_array, index);
+		if ( cf2c( cf_uti_identifier, tmp, sizeof( tmp )) != 0 ) {
+		goto duti_utis_cleanup;
+		}
+		printf( "identifier: %s\n", tmp );
+
+		cf_uti_description = UTTypeCopyDescription(cf_uti_identifier);
+		if ( cf2c( cf_uti_description, tmp, sizeof( tmp )) != 0 ) {
+		goto duti_utis_cleanup;
+		}
+		CFRelease(cf_uti_description); cf_uti_description = NULL;
+		printf( "description: %s\n", tmp );
+
+		cf_uti_declaration = UTTypeCopyDeclaration(cf_uti_identifier);
+		printf( "declaration: {\n" );
+		CFDictionaryApplyFunction(cf_uti_declaration, dump_cf_dictionary, "\t");
+		CFRelease(cf_uti_declaration); cf_uti_declaration = NULL;
+		printf( "}\n" );
+	}
+
+    /* success */
+    rc = 0;
+
+duti_utis_cleanup:
+    if ( cf_ext != NULL ) {
+	CFRelease( cf_ext );
+    }
+    if ( cf_array != NULL ) {
+	CFRelease( cf_array );
+    }
+    if ( cf_uti_description != NULL ) {
+	CFRelease( cf_uti_description );
+    }
+    if ( cf_uti_declaration != NULL ) {
+	CFRelease( cf_uti_declaration );
+    }
+
+    return( rc );
+}
+
+static void
+dump_cf_array( const void *value, void *context ) {
+	CFTypeID	typeID;
+    char		tmp[ MAXPATHLEN ];
+
+	typeID = CFGetTypeID( value );
+	if (typeID == CFStringGetTypeID()) {
+		if ( cf2c( value, tmp, sizeof( tmp )) != 0 ) {
+		return;
+		}
+		printf( "%s%s\n", (char *) context, tmp );
+	} else {
+		printf( "%sunhandled value\n", (char *) context );
+	}
+}
+
+static void
+dump_cf_dictionary( const void *key, const void *value, void *context ) {
+	CFTypeID	typeID;
+    char		tmp[ MAXPATHLEN ];
+
+	if ( cf2c( key, tmp, sizeof( tmp )) != 0 ) {
+	return;
+	}
+	printf( "%s%s = ", (char *) context, tmp );
+
+	typeID = CFGetTypeID( value );
+	if (typeID == CFStringGetTypeID()) {
+		if ( cf2c( value, tmp, sizeof( tmp )) != 0 ) {
+		return;
+		}
+		printf( "%s\n", tmp );
+	} else if (typeID == CFArrayGetTypeID()) {
+		printf( "[\n" );
+		sprintf(tmp, "%s\t", (char *) context );
+		CFArrayApplyFunction(value, CFRangeMake( 0, CFArrayGetCount( value )), dump_cf_array, tmp);
+		printf( "%s]\n", (char *) context );
+	} else if (typeID == CFDictionaryGetTypeID()) {
+		printf( "{\n" );
+		sprintf(tmp, "%s\t", (char *) context );
+		CFDictionaryApplyFunction(value, dump_cf_dictionary, tmp);
+		printf( "%s}\n", (char *) context );
+	} else {
+		printf( "unhandled key\n");
+	}
 }
