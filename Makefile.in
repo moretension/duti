@@ -50,7 +50,7 @@ util.o : util.c
 duti : ${DUTI_OBJ}
 	${CC} ${FRAMEWORKS} ${CFLAGS} -o duti ${DUTI_OBJ} ${LDFLAGS}
 
-VERSION=$(shell date +%Y%m%d)
+VERSION=1.5.2
 DISTDIR=duti-${VERSION}
 
 dist : distclean
