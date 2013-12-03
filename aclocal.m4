@@ -32,6 +32,7 @@ AC_DEFUN([DUTI_CHECK_SDK],
 
 	darwin13*)
 	    sdk_path="${sdk_path}/MacOSX10.9.sdk"
+	    macosx_arches=""
 	    ;;
 	*)
 	    AC_MSG_ERROR([${host_os} is not a supported system])
