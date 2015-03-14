@@ -1,3 +1,5 @@
+/* -*- mode:c; tab-width: 8 -*- */
+
 int		read_plist( char *, CFDictionaryRef * );
 
 /* plist keys */
