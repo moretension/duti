@@ -323,7 +323,7 @@ More technical information, including APIs, can be found at:
 To get a list of UTIs on your system, you can use the following command line:
 .sp
 .br
-	\`locate lsregister\` -dump | grep '[[:space:]]uti:' \\
+	\`mdfind -name lsregister\` -dump | grep '[[:space:]]uti:' \\
 .br
 		| awk '{ print $2 }' | sort | uniq
 .sp
