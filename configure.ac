@@ -1,7 +1,7 @@
 
 # Process with autoconf to create configure script
 
-AC_INIT(dh, INTERNAL, nosupport@all)
+AC_INIT(dh, 1.5.2, nosupport@all)
 AC_PREREQ(2.52)
 AC_COPYRIGHT([Copyright released into the public domain by Andrew Mortensen, January 2008.])
 AC_CONFIG_SRCDIR([duti.c])
