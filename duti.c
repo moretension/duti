@@ -37,8 +37,11 @@ main( int ac, char *av[] )
     extern int		optind;
     extern char		*optarg;
 
-    while (( c = getopt( ac, av, "d:e:hl:o:p:st:u:Vvx:" )) != -1 ) {
+    while (( c = getopt( ac, av, "b:d:e:hl:o:st:u:Vvx:" )) != -1 ) {
 	switch ( c ) {
+	case 'b':
+	    return( duti_urls_for_bundle( optarg ));
+
 	case 'd':	/* show default handler for UTI */
 	    return( uti_handler_show( optarg, 0 ));
 
@@ -55,9 +58,6 @@ main( int ac, char *av[] )
 
 	case 'o':
 	    return( duti_urls_for_url( optarg ));	
-
-	case 'p':
-	    return( duti_urls_for_bundle( optarg ));
 
 	case 's':	/* set handler */
 	    set = 1;
