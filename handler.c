@@ -65,6 +65,16 @@ set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 	fprintf( stderr, "%s does not conform to any UTI hierarchy\n", ct );
 	return( 1 );
     }
+    
+    /* don't set handler if it's already set */
+    CFStringRef cur_bid = LSCopyDefaultRoleHandlerForContentType(type, mask);
+    if (cur_bid) {
+	if (CFStringCompare(bid, cur_bid, kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
+	    CFRelease(cur_bid);
+	    return noErr;
+	}
+	CFRelease(cur_bid);
+    }
 
     if ( verbose ) {
 	printf( "setting %s as handler for %s\n", cb, ct );
@@ -91,6 +101,16 @@ set_url_handler( CFStringRef bid, CFStringRef url_scheme )
     }
     if ( cf2c( url_scheme, cu, sizeof( cu )) != 0 ) {
 	strlcpy( cu, "url_scheme", sizeof( cu ));
+    }
+    
+    /* don't set handler if it's already set */
+    CFStringRef cur_bid = LSCopyDefaultHandlerForURLScheme(url_scheme);
+    if (cur_bid) {
+	if (CFStringCompare(bid, cur_bid, kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
+	    CFRelease(cur_bid);
+	    return noErr;
+	}
+	CFRelease(cur_bid);
     }
 
     if ( verbose ) {
@@ -916,7 +936,7 @@ duti_utis( char *uti ) {
     printf( "}\n" );
 
     /* success */
-     rc = 0;
+    rc = 0;
 
 duti_utis_cleanup:
     if ( cf_uti_identifier ) {
@@ -927,6 +947,43 @@ duti_utis_cleanup:
     }
     if ( cf_uti_declaration != NULL ) {
 	CFRelease( cf_uti_declaration );
+    }
+
+    return rc;
+}
+
+int
+duti_urls_for_bundle(char *bundle_id) {
+    CFStringRef		cf_bundle_id = NULL;
+    CFArrayRef		cf_array = NULL;
+    CFErrorRef		cf_error = NULL;
+    int			rc = 2;
+
+    if ( bundle_id == NULL ) {
+	fprintf( stderr, "Invalid bundle identifier.\n" );
+	return( rc );
+    }
+
+    if ( c2cf( bundle_id, &cf_bundle_id ) != 0 ) {
+	return( rc );
+    }
+
+    cf_array = LSCopyApplicationURLsForBundleIdentifier(cf_bundle_id, &cf_error);
+    if (cf_array) {
+	CFArrayApplyFunction(cf_array, CFRangeMake( 0, CFArrayGetCount( cf_array )), dump_cf_array, "url: ");
+    }
+
+    /* success */
+    rc = 0;
+
+    if ( cf_bundle_id ) {
+	CFRelease( cf_bundle_id );
+    }
+    if ( cf_array != NULL ) {
+	CFRelease( cf_array );
+    }
+    if ( cf_error != NULL ) {
+	CFRelease( cf_error );
     }
 
     return rc;
@@ -1007,6 +1064,13 @@ dump_cf_array( const void *value, void *context ) {
     typeID = CFGetTypeID( value );
     if (typeID == CFStringGetTypeID()) {
 	if ( cf2c( value, tmp, sizeof( tmp )) != 0 ) {
+	    return;
+	}
+	printf( "%s%s\n", (char *) context, tmp );
+    } if (typeID == CFURLGetTypeID()) {
+	CFURLRef cf_url = (CFURLRef) value;
+	CFStringRef cf_url_path = CFURLGetString( cf_url );
+	if ( cf2c( cf_url_path, tmp, sizeof( tmp )) != 0 ) {
 	    return;
 	}
 	printf( "%s%s\n", (char *) context, tmp );

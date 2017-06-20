@@ -22,4 +22,5 @@ int		duti_default_app_for_type( char * );
 int		duti_is_conformant_uti( CFStringRef );
 int		duti_urls_for_url( char * );
 int		duti_utis( char * );
+int		duti_urls_for_bundle( char * );
 int		duti_utis_for_extension( char * );

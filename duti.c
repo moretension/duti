@@ -37,7 +37,7 @@ main( int ac, char *av[] )
     extern int		optind;
     extern char		*optarg;
 
-    while (( c = getopt( ac, av, "d:e:hl:o:st:u:Vvx:" )) != -1 ) {
+    while (( c = getopt( ac, av, "d:e:hl:o:p:st:u:Vvx:" )) != -1 ) {
 	switch ( c ) {
 	case 'd':	/* show default handler for UTI */
 	    return( uti_handler_show( optarg, 0 ));
@@ -55,6 +55,9 @@ main( int ac, char *av[] )
 
 	case 'o':
 	    return( duti_urls_for_url( optarg ));	
+
+	case 'p':
+	    return( duti_urls_for_bundle( optarg ));
 
 	case 's':	/* set handler */
 	    set = 1;
@@ -116,7 +119,7 @@ main( int ac, char *av[] )
     }
 
     if ( err ) {
-	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -e ext ] [ -l uti ] [ -o path ] [ -t type ] [ -u uti ] [ -x ext ]"
+	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -e ext ] [ -l uti ] [ -o path ] [ -p bundle_id ] [ -t type ] [ -u uti ] [ -x ext ]"
 		 "[ settings_path ]\n", av[ 0 ] );
 	fprintf( stderr, "usage: %s -s bundle_id url_scheme\n", av[ 0 ] );
 	fprintf( stderr, "usage: %s -s bundle_id uti role\n", av[ 0 ] );
