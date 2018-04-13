@@ -14,11 +14,9 @@ given UTI.
 Compiling
 ---------
 
-    ```sh
     ./configure
     make
     sudo make install
-    ```
 
 
 Usage
@@ -73,9 +71,8 @@ Examples
 
     ```sh
     duti -x jpg
-    ```
 
-    ```
+    # Output
     Preview
     /Applications/Preview.app
     com.apple.Preview
