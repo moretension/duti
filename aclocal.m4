@@ -40,7 +40,7 @@ AC_DEFUN([DUTI_CHECK_SDK],
 	    macosx_arches=""
 	    ;;
 
-	darwin15*|darwin16*|darwin17*)
+	darwin15*|darwin16*|darwin17*|darwin18*)
 	    sdk_path="${sdk_path}/MacOSX.sdk"
 	    macosx_arches=""
 	    ;;
@@ -105,6 +105,10 @@ AC_DEFUN([DUTI_CHECK_DEPLOYMENT_TARGET],
 
 	darwin17*)
 	    dep_target="10.13"
+	    ;;
+
+	darwin18*)
+	    dep_target="10.14"
 	    ;;
     esac
 
