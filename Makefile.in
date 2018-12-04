@@ -84,7 +84,7 @@ PKGINFO=	pkg-resources/Description.plist pkg-resources/Info.plist
 DEVUTILS=	/Developer/Applications/Utilities
 PKGMKR=		${DEVUTILS}/PackageMaker.app/Contents/MacOS/packagemaker
 
-package : all
+packageroot : all
 	-mkdir -p -m 0755 ${PKGDIR}/${BINDIR}
 	for i in ${TARGETS}; do \
 	    ${INSTALL} -m 0755 -c $$i ${PKGDIR}/${BINDIR}/; \
@@ -109,6 +109,8 @@ package : all
 	done
 	sudo chown -R root:wheel ${PKGDIR}
 	sudo chgrp admin ${PKGDIR}
+
+pkgmaker : packageroot
 	${PKGMKR} -build -p ../${PKGNAME}.pkg \
 	    -f ${PKGDIR} -r ${PKGINFODIR} \
 	    -i ${PKGINFODIR}/Info.plist \
@@ -119,7 +121,26 @@ package : all
 	    (cd ..; openssl $$c ${PKGNAME}.pkg.tar.gz); \
 	done
 
-pkg : package
+pkgbld : packageroot
+	pkgbuild --root ${PKGDIR} \
+            --identifier public-domain.mortensen.duti-installer \
+	    --version ${VERSION} \
+	    ../${PKGNAME}.pkg
+
+pkgbldsigned : pkgbld
+	/bin/mv ../${PKGNAME}.pkg ../${PKGNAME}-unsigned.pkg
+	productsign --timestamp --sign "${INST_KEY}" ../${PKGNAME}-unsigned.pkg ../${PKGNAME}.pkg
+
+pkgcln :
+	(cd .. && tar cvfz ${PKGNAME}.pkg.tar.gz ${PKGNAME}.pkg)
+	sudo rm -rf tmp
+	for c in sha1 rmd160 md5; do \
+	    (cd ..; openssl $$c ${PKGNAME}.pkg.tar.gz); \
+	done
+
+pkg : pkgbld pkgcln
+
+pkgsigned : pkgbldsigned pkgcln
 
 clean :
 	rm -f *.o a.out core
