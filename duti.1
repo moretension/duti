@@ -306,24 +306,18 @@ Settings could not be applied, or the UTI has no handler.
 Error.
 .sp
 .SH MORE INFO
-Mac OS X ships with a number of UTIs already defined. Most third-party
+macOS ships with a number of UTIs already defined. Most third-party
 software is responsible for defining its own UTIs. Apple documents UTIs
-in the Apple Developer Connection Library at:
+in the Apple Developer Documentation Archive at:
 .sp
 .br
-	http://developer.apple.com/referencelibrary/
-.br
-.sp
-More technical information, including APIs, can be found at:
-.sp
-.br
-	http://developer.apple.com/macosx/uniformtypeidentifiers.html
+	https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/understanding_utis/understand_utis_intro/understand_utis_intro.html
 .br
 .sp
 To get a list of UTIs on your system, you can use the following command line:
 .sp
 .br
-	\`locate lsregister\` -dump | grep '[[:space:]]uti:' \\
+	$(mdfind -name lsregister) -dump | grep '[[:space:]]uti:' \\
 .br
 		| awk '{ print $2 }' | sort | uniq
 .sp
