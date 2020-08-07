@@ -1,3 +1,5 @@
+/* -*- mode:c; tab-width: 8 -*- */
+
 struct ll {
     char	*l_path;
     struct ll	*l_next;

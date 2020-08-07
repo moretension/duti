@@ -1,3 +1,5 @@
+/* -*- mode:c; tab-width: 8 -*- */
+
 #include <CoreFoundation/CoreFoundation.h>
 
 #include <sys/types.h>

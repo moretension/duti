@@ -1,3 +1,5 @@
+/* -*- mode:c; tab-width: 8 -*- */
+
 struct roles {
     const char		*r_role;
     LSRolesMask		r_mask;

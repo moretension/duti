@@ -1,3 +1,5 @@
+/* -*- mode:c; tab-width: 8 -*- */
+
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 

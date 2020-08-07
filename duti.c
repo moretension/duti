@@ -1,3 +1,5 @@
+/* -*- mode:c; tab-width: 8 -*- */
+
 /* duti: set default handlers for document types based on a settings file. */
 
 #include <ApplicationServices/ApplicationServices.h>
