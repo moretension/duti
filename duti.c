@@ -28,7 +28,7 @@ struct roles		rtm[] = {
 main( int ac, char *av[] )
 {
     struct stat		st;
-    int			c, err = 0;
+    int			c, rc, err = 0;
     int			set = 0;
     int			( *handler_f )( char * );
     char		*path = NULL;
@@ -37,13 +37,28 @@ main( int ac, char *av[] )
     extern int		optind;
     extern char		*optarg;
 
-    while (( c = getopt( ac, av, "d:e:l:hsu:Vvx:" )) != -1 ) {
+    while (( c = getopt( ac, av, "b:d:e:hl:o:st:u:Vvx:" )) != -1 ) {
 	switch ( c ) {
+	case 'b':	/* show bundle URLs for identifier */
+	    rc = duti_urls_for_bundle( optarg );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
+
 	case 'd':	/* show default handler for UTI */
-	    return( uti_handler_show( optarg, 0 ));
+	    rc = uti_handler_show( optarg, 0 );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
 
 	case 'e':	/* UTI declarations for extension */
-		return( duti_utis_for_extension( optarg ));
+	    rc = duti_utis_for_extension( optarg );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
 
 	case 'h':	/* help */
 	default:
@@ -51,26 +66,55 @@ main( int ac, char *av[] )
 	    break;
 
 	case 'l':	/* list all handlers for UTI */
-	    return( uti_handler_show( optarg, 1 ));
+	    rc = uti_handler_show( optarg, 1 );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
+
+	case 'o':	/* show all bundles able to open path */
+	    rc = duti_urls_for_url( optarg );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
 
 	case 's':	/* set handler */
 	    set = 1;
 	    break;
 
+	case 't':	/* info for type */
+	    rc = duti_default_app_for_type( optarg );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
+
 	case 'u':	/* UTI declarations */
-		return( duti_utis( optarg ));
+	    rc = duti_utis( optarg );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
+	    break;
 
 	case 'V':	/* version */
 	    printf( "%s\n", duti_version );
-	    exit( 0 );
+	    break;
 
 	case 'v':	/* verbose */
 	    verbose = 1;
 	    break;
 
 	case 'x':	/* info for extension */
-	    return( duti_default_app_for_extension( optarg ));
+	    rc = duti_default_app_for_extension( optarg );
+	    if ( rc ) {
+	        exit( 0 );
+	    }
 	}
+    }
+
+    if ( !set && !err) {
+	exit( 0 );
     }
 
     nroles = sizeof( rtm ) / sizeof( rtm[ 0 ] );
@@ -109,11 +153,18 @@ main( int ac, char *av[] )
     }
 
     if ( err ) {
-	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -l uti ] "
-			 "[ settings_path ]\n", av[ 0 ] );
-	fprintf( stderr, "usage: %s -s bundle_id { uti | url_scheme } "
-			 "[ role ]\n", av[ 0 ] );
-	fprintf( stderr, "usage: %s -x extension\n", av[ 0 ] );
+	fprintf( stderr, "usage: %s [ -hvV ] [ -b bundle_id ] [ -d uti ] [ -e ext ] [ -l uti ] [ -o path ] [ -t type ] [ -u uti ] [ -x ext ]"
+		 "[ settings_path ]\n", av[ 0 ] );
+	fprintf( stderr, "	-b print the URLs to all bundles with the identifier\n" );
+	fprintf( stderr, "	-d print the default handler for the UTI\n" );
+	fprintf( stderr, "	-e print the UTI declaration for the file extension\n" );
+	fprintf( stderr, "	-l print the handlers for the UTI\n" );
+	fprintf( stderr, "	-o print the URLs for all bundles able to open path\n" );
+	fprintf( stderr, "	-t print the UTI declaration for the file type\n" );
+	fprintf( stderr, "	-u print the UTI declaration for the UTI\n" );
+	fprintf( stderr, "	-x print bundle claiming the file extension\n" );
+	fprintf( stderr, "usage: %s -s bundle_id url_scheme\n", av[ 0 ] );
+	fprintf( stderr, "usage: %s -s bundle_id uti role\n", av[ 0 ] );
 	exit( 1 );
     }
 
