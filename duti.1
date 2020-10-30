@@ -317,7 +317,7 @@ in the Apple Developer Documentation Archive at:
 To get a list of UTIs on your system, you can use the following command line:
 .sp
 .br
-	$(mdfind -name lsregister) -dump | grep '[[:space:]]uti:' \\
+	$(mdfind -name lsregister) -dump | grep '[[:space:]]*uti:' \\
 .br
 		| awk '{ print $2 }' | sort | uniq
 .sp
