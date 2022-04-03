@@ -13,15 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: configure
       run: autoreconf -i && ./configure
-      
+
     - name: Install dependencies
       run: make
-      
-    - name: Run check
-      run: make check
-      
-    - name: Run distcheck
-      run: make distcheck
