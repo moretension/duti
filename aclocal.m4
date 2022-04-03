@@ -50,7 +50,7 @@ AC_DEFUN([DUTI_CHECK_SDK],
 	    macosx_arches="-arch x86_64"
 	    ;;
 
-	darwin20*)
+	darwin20*|darwin21*)
 	    sdk_path="${sdk_path}/MacOSX.sdk"
 	    macosx_arches="-arch x86_64 -arch arm64"
 	    ;;
@@ -126,8 +126,13 @@ AC_DEFUN([DUTI_CHECK_DEPLOYMENT_TARGET],
 	    ;;
 
 	darwin20*)
-	    dep_target="10.16"
+	    dep_target="11"
 	    ;;
+	
+	darwin21*)
+	    dep_target="12"
+	    ;;
+
     esac
 
     if test -z "$macosx_dep_target"; then
