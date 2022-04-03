@@ -1,4 +1,4 @@
-duti 
+duti
 ====
 
 duti is a command-line utility capable of setting default applications for
@@ -14,6 +14,7 @@ given UTI.
 Compiling
 ---------
 
+    autoreconf -i
     ./configure
     make
     sudo make install
