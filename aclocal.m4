@@ -128,9 +128,13 @@ AC_DEFUN([DUTI_CHECK_DEPLOYMENT_TARGET],
 	darwin20*)
 	    dep_target="11"
 	    ;;
-	
+
 	darwin21*)
 	    dep_target="12"
+	    ;;
+
+	darwin22*)
+	    dep_target="13"
 	    ;;
 
     esac
