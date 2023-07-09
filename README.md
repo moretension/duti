@@ -85,6 +85,9 @@ Support
 `duti` is unsupported. You can submit bug reports and feature requests at
 the duti [GitHub project page](https://github.com/moretension).
 
+You can refer to [dutis](https://github.com/tsonglew/dutis) for a more
+actively maintained tool, it's a wrapper around duti, providing an
+interactive interface toselect default applications.
 
 License
 -------
