@@ -7,3 +7,4 @@ config.status
 configure
 version.c
 *.o
+duti
