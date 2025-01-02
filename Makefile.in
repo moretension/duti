@@ -50,7 +50,7 @@ util.o : util.c
 duti : ${DUTI_OBJ}
 	${CC} ${FRAMEWORKS} ${CFLAGS} -o duti ${DUTI_OBJ} ${LDFLAGS}
 
-VERSION=$(shell date +%Y%m%d)
+VERSION := $(shell grep '^version' version.toml | sed 's/version = \"\(.*\)\"/\1/') #'
 DISTDIR=duti-${VERSION}
 
 dist : distclean

@@ -1,21 +1,37 @@
-name: Makefile CI
+name: Makefile + Release CI
 
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
-
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: configure
+    - name: Conventional Changelog Action
+      id: changelog
+      uses: TriPSs/conventional-changelog-action@v6
+      with:
+        version-file: "./version.toml"
+        version-path: "version"
+        fallback-version: "1.5.5"
+        output-file: "CHANGELOG.md"
+
+    - name: Install Autoconf
+      run: brew install autoconf
+
+    - name: Configure
       run: autoreconf -i && ./configure
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: make
+
+    - name: GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: ${{ steps.changelog.outputs.skipped == 'false' }}
+      with:
+        # output options: https://github.com/TriPSs/conventional-changelog-action#outputs
+        tag_name: ${{ steps.changelog.outputs.tag }}
+        body: ${{ steps.changelog.outputs.clean_changelog }}

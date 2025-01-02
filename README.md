@@ -31,7 +31,7 @@ Usage
 
 1. an XML [property list](https://en.wikipedia.org/wiki/Property_list) (plist)
 
-1. command-line arguments.
+1. command-line arguments
 
 A settings line, as read in cases 1 and 2, consists of an application's bundle
 ID, a UTI, and a string describing what role the application handles for the
@@ -83,7 +83,7 @@ Support
 -------
 
 `duti` is unsupported. You can submit bug reports and feature requests at
-the duti [GitHub project page](https://github.com/moretension).
+the duti [GitHub project page](https://github.com/moretension/duti).
 
 Related
 -------
