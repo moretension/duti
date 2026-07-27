@@ -496,6 +496,26 @@ duti_handler_set( char *bid, char *type, char *role )
 		rc = 2;
 		goto duti_set_cleanup;
 	    }
+
+	    /*
+	     * If the OS could not find a registered UTI for the given
+	     * extension or MIME type it synthesises a dynamic UTI with a
+	     * "dyn." prefix.  Launch Services refuses to register a default
+	     * handler for dynamic UTIs (returning paramErr / -50), so bail
+	     * out early with a meaningful message
+	     */
+	    if ( CFStringHasPrefix( preferredUTI,
+				    CFSTR( "dyn." ))) {
+		char cdyn[ MAXPATHLEN ];
+		if ( cf2c( preferredUTI, cdyn, sizeof( cdyn )) != 0 ) {
+		    strlcpy( cdyn, "dyn.*", sizeof( cdyn ));
+		}
+		fprintf( stderr, "no registered UTI for type \"%s\" "
+				 "(resolved to dynamic UTI %s); "
+				 "cannot set handler\n", type, cdyn );
+		rc = 2;
+		goto duti_set_cleanup;
+	    }
 	}
     }
     if ( c2cf( bid, &cf_bid ) != 0 ) {
