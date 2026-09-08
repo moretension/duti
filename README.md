@@ -90,6 +90,9 @@ Related
 [dutis](https://github.com/tsonglew/dutis) is a wrapper around duti, providing an
 interactive interface to select default applications.
 
+[macOSDefaultApps](https://github.com/klabast/macOSDefaultApps) is an app and CLI
+for macOS 15 and later. It reads duti settings files unchanged.
+
 License
 -------
 
