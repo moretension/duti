@@ -486,7 +486,7 @@ duti_handler_set( char *bid, char *type, char *role )
 	    }
 
 	    preferredUTI = UTTypeCreatePreferredIdentifierForTag(
-				tagClass, cf_type, kUTTypeContent );
+				tagClass, cf_type, NULL );
 	    CFRelease( cf_type );
 	    cf_type = NULL;
 
