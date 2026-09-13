@@ -62,7 +62,7 @@ read_plist( char *plpath, CFDictionaryRef *dr )
 	goto cleanup;
     }
 
-    if (( cfdict = CFPropertyListCreateFromStream( kCFAllocatorDefault, cfrs,
+    if (( cfdict = CFPropertyListCreateWithStream( kCFAllocatorDefault, cfrs,
 			0, kCFPropertyListImmutable, &fmt, NULL )) == NULL ) {
 	fprintf( stderr, "%s: failed to read plist\n", __FUNCTION__ );
 	rc = -1;

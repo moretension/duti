@@ -444,6 +444,7 @@ duti_handler_set( char *bid, char *type, char *role )
     CFStringRef		cf_bid = NULL;
     CFStringRef		cf_type = NULL;
     CFStringRef		tagClass = NULL, preferredUTI = NULL;
+    char		dyn[ MAXPATHLEN ];
     int			rc = 0;
     int			i = 0;
 
@@ -486,7 +487,7 @@ duti_handler_set( char *bid, char *type, char *role )
 	    }
 
 	    preferredUTI = UTTypeCreatePreferredIdentifierForTag(
-				tagClass, cf_type, kUTTypeContent );
+				tagClass, cf_type, NULL );
 	    CFRelease( cf_type );
 	    cf_type = NULL;
 
@@ -494,6 +495,22 @@ duti_handler_set( char *bid, char *type, char *role )
 		fprintf( stderr, "failed to create preferred "
 				 "identifier for type %s", type );
 		rc = 2;
+		goto duti_set_cleanup;
+	    }
+
+	    /*
+	     * nothing on this system formally declares a UTI for this
+	     * type, so Launch Services synthesized a dynamic one. there
+	     * is no registered type to set as a default handler for.
+	     */
+	    if ( CFStringHasPrefix( preferredUTI, CFSTR( "dyn." ))) {
+		if ( cf2c( preferredUTI, dyn, sizeof( dyn )) != 0 ) {
+		    strlcpy( dyn, "(dynamic)", sizeof( dyn ));
+		}
+		fprintf( stderr, "%s: no installed application formally "
+		    "declares this type (dynamic UTI %s), so it cannot be "
+		    "registered as a default handler\n", type, dyn );
+		rc = 1;
 		goto duti_set_cleanup;
 	    }
 	}
