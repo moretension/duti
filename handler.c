@@ -438,6 +438,115 @@ uti_show_done:
     return( rc );
 }
 
+/*
+ * print one handler as "bundle_id<TAB>path", with a third "default"
+ * field for the default handler. the path is "-" if Launch Services
+ * cannot locate an application with the bundle ID.
+ */
+    static int
+handler_path_show( CFStringRef cfhandler, int isdefault )
+{
+    CFArrayRef		cfurls = NULL;
+    char		dh[ MAXPATHLEN ];
+    char		path[ MAXPATHLEN ];
+
+    if ( cf2c( cfhandler, dh, sizeof( dh )) != 0 ) {
+	return( 2 );
+    }
+
+    strlcpy( path, "-", sizeof( path ));
+    if (( cfurls = LSCopyApplicationURLsForBundleIdentifier(
+				cfhandler, NULL )) != NULL ) {
+	if ( CFArrayGetCount( cfurls ) > 0 ) {
+	    if ( cfurl2path( CFArrayGetValueAtIndex( cfurls, 0 ),
+			path, sizeof( path )) != 0 ) {
+		strlcpy( path, "-", sizeof( path ));
+	    }
+	}
+	CFRelease( cfurls );
+    }
+
+    printf( "%s\t%s%s\n", dh, path, isdefault ? "\tdefault" : "" );
+
+    return( 0 );
+}
+
+/*
+ * print all handlers for a UTI or URL scheme with the path of each
+ * application, marking the default handler.
+ */
+    int
+uti_handler_show_paths( char *uti )
+{
+    CFArrayRef		cfhandlers = NULL;
+    CFStringRef		cfuti = NULL;
+    CFStringRef		cfdefault = NULL;
+    CFStringRef		cfhandler;
+    int			rc = 0, shown_default = 0, isdefault;
+    int			count, i;
+
+    if ( uti == NULL ) {
+	fprintf( stderr, "Invalid UTI.\n" );
+	return( 2 );
+    }
+
+    if ( c2cf( uti, &cfuti ) != 0 ) {
+	return( 2 );
+    }
+
+    if (( cfhandlers = LSCopyAllRoleHandlersForContentType(
+				cfuti, kLSRolesAll )) != NULL ) {
+	cfdefault = LSCopyDefaultRoleHandlerForContentType(
+				cfuti, kLSRolesAll );
+    } else if (( cfhandlers = LSCopyAllHandlersForURLScheme(
+				cfuti )) != NULL ) {
+	cfdefault = LSCopyDefaultHandlerForURLScheme( cfuti );
+    } else {
+	fprintf( stderr, "%s: no handlers\n", uti );
+	rc = 1;
+	goto uti_show_paths_done;
+    }
+
+    if ( verbose ) {
+	printf( "All handlers for %s:\n", uti );
+    }
+
+    count = CFArrayGetCount( cfhandlers );
+    for ( i = 0; i < count; i++ ) {
+	cfhandler = CFArrayGetValueAtIndex( cfhandlers, i );
+
+	/* Launch Services may return the default bundle ID lowercased */
+	isdefault = ( cfdefault != NULL && CFStringCompare( cfhandler,
+		cfdefault, kCFCompareCaseInsensitive ) == kCFCompareEqualTo );
+	if ( isdefault ) {
+	    shown_default = 1;
+	}
+	if ( handler_path_show( cfhandler, isdefault ) != 0 ) {
+	    rc = 2;
+	}
+    }
+
+    /* a default set with duti need not be among the declared handlers */
+    if ( cfdefault != NULL && !shown_default ) {
+	if ( handler_path_show( cfdefault, 1 ) != 0 ) {
+	    rc = 2;
+	}
+    }
+
+uti_show_paths_done:
+    if ( cfhandlers ) {
+	CFRelease( cfhandlers );
+    }
+    if ( cfuti ) {
+	CFRelease( cfuti );
+    }
+    if ( cfdefault ) {
+	CFRelease( cfdefault );
+    }
+
+    return( rc );
+}
+
     int
 duti_handler_set( char *bid, char *type, char *role )
 {

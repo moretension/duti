@@ -15,6 +15,7 @@ int		psethandler( char * );
 int		dirsethandler( char * );
 
 int		uti_handler_show( char *uti, int showall );
+int		uti_handler_show_paths( char *uti );
 int		url_handler_show( char *url_scheme );
 int		duti_handler_set( char *, char *, char * );
 int		duti_default_app_for_extension( char * );

@@ -79,6 +79,16 @@ Examples
     com.apple.Preview
     ```
 
+* List every handler for JPEG images with its path, marking the default:
+
+    ```sh
+    duti -L public.jpeg
+
+    # Output (tab-separated)
+    com.apple.Preview	/System/Applications/Preview.app	default
+    com.apple.ColorSyncUtility	/System/Applications/Utilities/ColorSync Utility.app
+    ```
+
 Support
 -------
 

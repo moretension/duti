@@ -11,6 +11,8 @@
 ] [
 .BI \-l\  uti
 ] [
+.BI \-L\  uti
+] [
 .I settings_path
 ]
 .sp
@@ -238,6 +240,17 @@ Retrieving default application information for an extension:
 .br
 .sp
 
+Listing every handler for JPEG images, with application paths:
+.sp
+.br
+	% duti -L public.jpeg
+.br
+	com.apple.Preview	/System/Applications/Preview.app	default
+.br
+	com.apple.ColorSyncUtility	/System/Applications/Utilities/ColorSync Utility.app
+.br
+.sp
+
 The following examples can be used by passing them to
 .B duti
 on stdin or as lines in a .duti file.
@@ -280,6 +293,16 @@ print usage and exit.
 display all handlers for
 .I uti
 and exit.
+.TP 19
+.BI \-L\  uti
+display all handlers for
+.IR uti ,
+one per line as the bundle ID and the application's path separated by
+a tab, and exit. The default handler has a third field, "default". The
+path is "-" if no application with that bundle ID can be found. As with
+.BR \-d " and " \-l ,
+.I uti
+may also be a URL scheme.
 .TP 19
 .BI \-s
 set the handler from data provided on the command line.

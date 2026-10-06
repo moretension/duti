@@ -37,7 +37,7 @@ main( int ac, char *av[] )
     extern int		optind;
     extern char		*optarg;
 
-    while (( c = getopt( ac, av, "d:e:l:hsu:Vvx:" )) != -1 ) {
+    while (( c = getopt( ac, av, "d:e:L:l:hsu:Vvx:" )) != -1 ) {
 	switch ( c ) {
 	case 'd':	/* show default handler for UTI */
 	    return( uti_handler_show( optarg, 0 ));
@@ -49,6 +49,9 @@ main( int ac, char *av[] )
 	default:
 	    err++;
 	    break;
+
+	case 'L':	/* list all handlers for UTI with their paths */
+	    return( uti_handler_show_paths( optarg ));
 
 	case 'l':	/* list all handlers for UTI */
 	    return( uti_handler_show( optarg, 1 ));
@@ -110,7 +113,7 @@ main( int ac, char *av[] )
 
     if ( err ) {
 	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -l uti ] "
-			 "[ settings_path ]\n", av[ 0 ] );
+			 "[ -L uti ] [ settings_path ]\n", av[ 0 ] );
 	fprintf( stderr, "usage: %s -s bundle_id { uti | url_scheme } "
 			 "[ role ]\n", av[ 0 ] );
 	fprintf( stderr, "usage: %s -x extension\n", av[ 0 ] );
