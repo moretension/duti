@@ -11,8 +11,19 @@ instance, a Microsoft Word document has a UTI of `com.microsoft.word.doc`. Using
 given UTI.
 
 
+Installing
+----------
+
+With [Homebrew](https://brew.sh):
+
+    brew install duti
+
+
 Compiling
 ---------
+
+Building from source needs the Xcode command line tools and autoconf
+(`brew install autoconf`):
 
     autoreconf -i
     ./configure
@@ -43,6 +54,21 @@ begin with `.` (single dot).
 `duti` can also print out the default application information for a given
 extension (`-x`). This feature is based on public domain source code posted
 by Keith Alperin on the heliumfoot.com blog.
+
+Options
+-------
+
+| Option | Description |
+|---|---|
+| `-s bundle_id type [role]` | Set the default handler. `type` is a UTI, an extension (`.pdf` or `pdf`) or a MIME type (`text/html`) when a role is given, and a URL scheme (`https`) when it is not. `role` is one of `none`, `viewer`, `editor`, `shell` or `all`. |
+| `-d uti` | Print the default handler for a UTI or URL scheme. |
+| `-l uti` | Print all handlers for a UTI or URL scheme. |
+| `-x ext` | Print the name, path and bundle ID of the default application for an extension. |
+| `-e ext` | Print the UTI declarations for an extension. |
+| `-u uti` | Print the declaration of a UTI. |
+| `-v` | Verbose output. |
+| `-V` | Print the version. |
+| `-h` | Print usage. |
 
 See the man page for additional usage details.
 
@@ -83,7 +109,7 @@ Support
 -------
 
 `duti` is unsupported. You can submit bug reports and feature requests at
-the duti [GitHub project page](https://github.com/moretension).
+the duti [GitHub project page](https://github.com/moretension/duti/issues).
 
 Related
 -------
