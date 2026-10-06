@@ -21,6 +21,72 @@ int			nroles;
 static void dump_cf_array( const void *value, void *context );
 static void dump_cf_dictionary( const void *key, const void *value, void *context );
 
+/*
+ * describe a Launch Services error as "error -54, permErr" and, for the
+ * errors users most often hit, follow it with a plain-English hint.
+ */
+    static void
+lserr_print( const char *what, OSStatus err )
+{
+    const char		*name, *hint = NULL;
+
+    name = GetMacOSStatusErrorString( err );
+    if ( name != NULL && *name != '\0' ) {
+	fprintf( stderr, "%s (error %d, %s)\n", what, ( int )err, name );
+    } else {
+	fprintf( stderr, "%s (error %d)\n", what, ( int )err );
+    }
+
+    switch ( err ) {
+    case permErr:
+	hint = "macOS refused the change. This is most often reported for "
+		"http, https and public.html; setting the default in System "
+		"Settings (Desktop & Dock > Default web browser) or with "
+		"Finder's Get Info > Open with > Change All may work instead.";
+	break;
+
+    case paramErr:
+	hint = "Launch Services rejected the request as invalid. Check the "
+		"bundle ID, and that the type is a registered UTI rather than "
+		"a dynamic dyn.* identifier.";
+	break;
+
+    case kLSApplicationNotFoundErr:
+	hint = "No application was found for this type.";
+	break;
+
+    case kLSUnknownTypeErr:
+	hint = "Launch Services does not recognise this type.";
+	break;
+
+    case kLSServerCommunicationErr:
+	hint = "The Launch Services server could not be reached.";
+	break;
+    }
+
+    if ( hint != NULL ) {
+	fprintf( stderr, "  %s\n", hint );
+    }
+}
+
+/*
+ * Launch Services accepts any bundle ID as a handler, installed or not,
+ * so warn about one that no installed application has, e.g. a typo.
+ */
+    static void
+warn_if_not_installed( CFStringRef bid, const char *cb )
+{
+    CFArrayRef		cfurls;
+
+    if (( cfurls = LSCopyApplicationURLsForBundleIdentifier(
+				bid, NULL )) != NULL ) {
+	CFRelease( cfurls );
+	return;
+    }
+    fprintf( stderr, "warning: no installed application has bundle ID %s; "
+		"the handler will not work until one is installed\n", cb );
+}
+
 
     int
 duti_is_conformant_uti( CFStringRef uti )
@@ -60,7 +126,8 @@ set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 	strlcpy( ct, "UTI", sizeof( ct ));
     }
 
-    
+    warn_if_not_installed( bid, cb );
+
     if ( !duti_is_conformant_uti( type )) {
 	fprintf( stderr, "%s does not conform to any UTI hierarchy\n", ct );
 	return( 1 );
@@ -72,8 +139,11 @@ set_uti_handler( CFStringRef bid, CFStringRef type, LSRolesMask mask )
 
     rc = LSSetDefaultRoleHandlerForContentType( type, mask, bid );
     if ( rc != noErr ) {
-	fprintf( stderr, "failed to set %s as handler "
-		"for %s (error %d)\n", cb, ct, ( int )rc );
+	char	what[ MAXPATHLEN * 2 + 32 ];
+
+	snprintf( what, sizeof( what ),
+		"failed to set %s as handler for %s", cb, ct );
+	lserr_print( what, rc );
     }
 
     return(( int )rc );
@@ -93,14 +163,19 @@ set_url_handler( CFStringRef bid, CFStringRef url_scheme )
 	strlcpy( cu, "url_scheme", sizeof( cu ));
     }
 
+    warn_if_not_installed( bid, cb );
+
     if ( verbose ) {
 	printf( "setting %s as handler for %s:// URLs\n", cb, cu );
     }
 
     rc = LSSetDefaultHandlerForURLScheme( url_scheme, bid );
     if ( rc != noErr ) {
-	fprintf( stderr, "failed to set %s as handler "
-		 "for %s:// (error %d)\n", cb, cu, ( int )rc );
+	char	what[ MAXPATHLEN * 2 + 32 ];
+
+	snprintf( what, sizeof( what ),
+		"failed to set %s as handler for %s://", cb, cu );
+	lserr_print( what, rc );
     }
 
     return(( int )rc );
@@ -579,8 +654,9 @@ duti_default_app_for_extension( char *ext )
     err = LSGetApplicationForInfo( kLSUnknownType, kLSUnknownCreator, cf_ext,
 					kLSRolesAll, NULL, &cf_app_url );
     if ( err != noErr ) {
-	fprintf( stderr, "Failed to get default application for "
-			 "extension \'%s\'\n", rext );
+	snprintf( tmp, sizeof( tmp ), "Failed to get default application "
+			"for extension \'%s\'", rext );
+	lserr_print( tmp, err );
 	goto duti_extension_cleanup;
     }
 

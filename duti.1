@@ -305,6 +305,19 @@ Settings could not be applied, or the UTI has no handler.
 >1
 Error.
 .sp
+.SH DIAGNOSTICS
+When Launch Services reports an error,
+.B duti
+prints its number and name, for example "error -54, permErr", followed by
+a short explanation for the most common errors. Error -54 (permErr) means
+macOS refused the change; it is most often seen for http, https and
+public.html. Error -50 (paramErr) usually means the type is not a
+registered UTI.
+.sp
+Launch Services accepts any bundle ID, so
+.B duti
+also warns when no installed application has the bundle ID being set.
+The setting is still applied.
 .SH MORE INFO
 macOS ships with a number of UTIs already defined. Most third-party
 software is responsible for defining its own UTIs. Apple documents UTIs
