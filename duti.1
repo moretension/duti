@@ -123,6 +123,15 @@ For example:
 would cause
 .B duti
 to set Firefox as the handler for "ftp://" URLs.
+.sp
+Fields are separated by spaces or tabs. Leading and trailing whitespace,
+including the carriage return of a CRLF line ending, is ignored, as are
+blank lines. A "#" at the start of a line or after whitespace begins a
+comment that runs to the end of the line. The last line need not end with
+a newline. If any line cannot be parsed or applied,
+.B duti
+continues with the remaining lines and exits with status 1. A line too
+long to read stops processing immediately with status 2.
 .SH SETTINGS PLIST
 If the extension of the file given to
 .B duti

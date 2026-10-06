@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
@@ -113,6 +114,7 @@ fsethandler( char *spath )
     char	line[ MAXPATHLEN * 2 ];
     char	*handler, *type, *role;
     char	**lineav = NULL;
+    char	*p;
     int		linenum = 0, rc = 0;
     int		len, htype;
 
@@ -129,18 +131,36 @@ fsethandler( char *spath )
 	linenum++;
 
 	len = strlen( line );
-	if ( line[ len - 1 ] != '\n' ) {
+	if ( len > 0 && line[ len - 1 ] == '\n' ) {
+	    line[ --len ] = '\0';
+	} else if ( len == sizeof( line ) - 1 && !feof( f )) {
+	    /* the buffer filled before the end of the line */
 	    fprintf( stderr, "line %d: line too long\n", linenum );
 	    exit( 2 );
 	}
-	line[ len - 1 ] = '\0';
+
+	/* a comment starts at a '#' that begins the line or follows a space */
+	for ( p = line; *p != '\0'; p++ ) {
+	    if ( *p == '#' && ( p == line || isspace(( unsigned char )p[ -1 ] ))) {
+		*p = '\0';
+		len = p - line;
+		break;
+	    }
+	}
+
+	/* strip trailing whitespace, including the \r of CRLF line endings */
+	while ( len > 0 && isspace(( unsigned char )line[ len - 1 ] )) {
+	    line[ --len ] = '\0';
+	}
+	for ( p = line; isspace(( unsigned char )*p ); p++ )
+	    ;
 
 	/* skip blanks and comments */
-	if ( *line == '\0' || *line == '#' ) {
+	if ( *p == '\0' ) {
 	    continue;
 	}
-	
-	htype = parseline( line, &lineav );
+
+	htype = parseline( p, &lineav );
 	switch ( htype ) {
 	case DUTI_TYPE_UTI_HANDLER:
 	    handler = lineav[ 0 ];
@@ -160,9 +180,13 @@ fsethandler( char *spath )
 	}
 
 	if ( htype == DUTI_TYPE_UTI_HANDLER ) {
-	    duti_handler_set( handler, type, role );
+	    if ( duti_handler_set( handler, type, role ) != 0 ) {
+		rc = 1;
+	    }
 	} else if ( htype == DUTI_TYPE_URL_HANDLER ) {
-	    duti_handler_set( handler, type, NULL );
+	    if ( duti_handler_set( handler, type, NULL ) != 0 ) {
+		rc = 1;
+	    }
 	}
     }
     if ( ferror( f )) {

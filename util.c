@@ -36,7 +36,10 @@ parseline( char *line, char ***lineav )
     for ( i = 1; i < 3; i++ ) {
 	while ( isspace( *line )) line++;
 	while ( *line != '\0' && !isspace( *line )) line++;
-	*line++ = '\0';
+	/* never step past the terminator into stale buffer contents */
+	if ( *line != '\0' ) {
+	    *line++ = '\0';
+	}
 	while ( isspace( *line )) line++;
 
 	pav[ i ] = line;

@@ -40,6 +40,20 @@ given to `duti` on the command-line is a directory, `duti` will apply settings
 from all valid settings files in that directory, excluding files whose names
 begin with `.` (single dot).
 
+A settings file might look like this:
+
+```
+# ~/.duti
+# bundle ID          type                role
+com.apple.TextEdit   public.plain-text   all      # plain text files
+com.apple.Preview    .pdf                viewer   # by extension
+org.mozilla.firefox  ftp                          # URL scheme, no role
+```
+
+Apply it with `duti ~/.duti`. Fields are separated by spaces or tabs, and
+`#` starts a comment. If any line fails, `duti` carries on with the rest and
+exits with status 1, so scripts can detect the failure.
+
 `duti` can also print out the default application information for a given
 extension (`-x`). This feature is based on public domain source code posted
 by Keith Alperin on the heliumfoot.com blog.
