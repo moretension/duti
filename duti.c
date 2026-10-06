@@ -111,7 +111,8 @@ main( int ac, char *av[] )
     if ( err ) {
 	fprintf( stderr, "usage: %s [ -hvV ] [ -d uti ] [ -l uti ] "
 			 "[ settings_path ]\n", av[ 0 ] );
-	fprintf( stderr, "usage: %s -s bundle_id { uti | url_scheme } "
+	fprintf( stderr, "usage: %s -s { bundle_id | app_path } "
+			 "{ uti | url_scheme } "
 			 "[ role ]\n", av[ 0 ] );
 	fprintf( stderr, "usage: %s -x extension\n", av[ 0 ] );
 	exit( 1 );

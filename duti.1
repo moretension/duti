@@ -16,7 +16,11 @@
 .sp
 .B duti
 .BI \-s
+{
 .I bundle_id
+|
+.I app_path
+}
 {
 .I uti
 |
@@ -72,6 +76,17 @@ treats the argument as a MIME type. In all other cases,
 .B duti
 treats the second argument as a UTI.
 .sp
+Wherever
+.B duti
+expects a bundle ID, on the command line, in a settings file or in a
+settings plist, it also accepts the path to an application bundle, such as
+/Applications/Safari.app, and uses that application's bundle ID. Since
+bundle IDs never contain a slash, any value containing a slash is treated
+as a path. With
+.BR \-v ,
+.B duti
+prints the bundle ID it found for each path.
+.sp
 .B duti
 .BI \-x
 retrieves and prints out information describing the default application
@@ -91,9 +106,11 @@ A settings file is made up of lines with the following format:
 .sp
 The
 .I app_id
-is a bundle ID representing the application that will act as the
-handler for documents associated with
+is a bundle ID or application path representing the application that will
+act as the handler for documents associated with
 .IR UTI .
+Because fields are separated by whitespace, an application path in a
+settings file cannot contain spaces; use a settings plist for such paths.
 For example:
 .sp
 .br

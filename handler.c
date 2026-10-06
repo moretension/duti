@@ -498,7 +498,20 @@ duti_handler_set( char *bid, char *type, char *role )
 	    }
 	}
     }
-    if ( c2cf( bid, &cf_bid ) != 0 ) {
+    /* bundle IDs never contain a slash, so treat one as an app path */
+    if ( strchr( bid, '/' ) != NULL ) {
+	if ( apppath2bid( bid, &cf_bid ) != 0 ) {
+	    rc = 2;
+	    goto duti_set_cleanup;
+	}
+	if ( verbose ) {
+	    char	cb[ MAXPATHLEN ];
+
+	    if ( cf2c( cf_bid, cb, sizeof( cb )) == 0 ) {
+		printf( "using bundle ID %s for %s\n", cb, bid );
+	    }
+	}
+    } else if ( c2cf( bid, &cf_bid ) != 0 ) {
 	rc = 2;
 	goto duti_set_cleanup;
     }

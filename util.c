@@ -1,8 +1,11 @@
 #include <CoreFoundation/CoreFoundation.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 
@@ -138,6 +141,64 @@ cfurl2path( CFURLRef cfurl, char *cstr, int len )
     }
 
     return( 0 );
+}
+
+/*
+ * apppath2bid: get the bundle ID of the application bundle at a path
+ *
+ * parameters:
+ *	path: path to an application bundle, e.g. /Applications/Safari.app
+ *	bid: will point to the bundle ID. must be CFRelease'd.
+ *
+ * return value:
+ *	-1: path is not a bundle with an identifier
+ *	 0: success
+ */
+    int
+apppath2bid( char *path, CFStringRef *bid )
+{
+    CFURLRef		cfurl = NULL;
+    CFBundleRef		cfbundle = NULL;
+    CFStringRef		cfbid;
+    struct stat		st;
+    char		respath[ MAXPATHLEN ];
+    int			rc = -1;
+
+    if ( realpath( path, respath ) == NULL ) {
+	fprintf( stderr, "%s: %s\n", path, strerror( errno ));
+	return( -1 );
+    }
+    if ( stat( respath, &st ) != 0 || !S_ISDIR( st.st_mode )) {
+	fprintf( stderr, "%s: not an application bundle\n", path );
+	return( -1 );
+    }
+
+    if (( cfurl = CFURLCreateFromFileSystemRepresentation(
+			kCFAllocatorDefault, ( const UInt8 * )respath,
+			( CFIndex )strlen( respath ), true )) == NULL ) {
+	fprintf( stderr, "%s: failed to create URL\n", path );
+	return( -1 );
+    }
+
+    /* CFBundleGetIdentifier follows the get rule, so copy the result */
+    if (( cfbundle = CFBundleCreate( kCFAllocatorDefault, cfurl )) == NULL ||
+	    ( cfbid = CFBundleGetIdentifier( cfbundle )) == NULL ) {
+	fprintf( stderr, "%s: no bundle identifier found\n", path );
+	goto apppath2bid_done;
+    }
+    if (( *bid = CFStringCreateCopy( kCFAllocatorDefault, cfbid )) == NULL ) {
+	fprintf( stderr, "%s: failed to copy bundle identifier\n", path );
+	goto apppath2bid_done;
+    }
+    rc = 0;
+
+apppath2bid_done:
+    if ( cfbundle != NULL ) {
+	CFRelease( cfbundle );
+    }
+    CFRelease( cfurl );
+
+    return( rc );
 }
 
 /*

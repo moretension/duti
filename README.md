@@ -62,6 +62,12 @@ Examples
     echo 'com.apple.TextEdit   com.microsoft.word.doc all' | duti
     ```
 
+* Use an application's path instead of its bundle ID:
+
+    ```sh
+    duti -s "/Applications/Sublime Text.app" public.plain-text all
+    ```
+
 * Set Finder as the default handler for ftp:// URLs:
 
     ```sh
